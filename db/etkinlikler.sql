@@ -1,0 +1,8 @@
+CREATE TABLE etkinlikler (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ad VARCHAR(100) NOT NULL,
+    yer VARCHAR(150) NOT NULL,
+    koltuk_sayisi INT NOT NULL,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    olusturma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci;
