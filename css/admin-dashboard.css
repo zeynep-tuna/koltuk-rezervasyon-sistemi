@@ -1,0 +1,60 @@
+.dashboard-alt-baslik {
+    color: #777;
+    margin-top: -6px;
+    margin-bottom: 26px;
+    font-size: 14px;
+}
+
+.dashboard-kartlar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.dashboard-kart {
+    background-color: #c9d0cb;
+    padding: 26px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-left: 6px solid #8AA29B;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    height: 160px;
+    overflow: hidden;
+}
+
+.dashboard-kart:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+    background-color: #b7bfb9;
+}
+
+.kart-ikon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+    background-color: rgba(255, 255, 255, 0.55);
+}
+
+.dashboard-kart h2 {
+    margin: 0 0 8px 0;
+    font-size: 17px;
+    color: #1F1F1F;
+}
+
+.dashboard-kart p {
+    margin: 0;
+    font-size: 13.5px;
+    color: #2b2b2b;
+    line-height: 1.5;
+    flex-grow: 1;
+}

@@ -1,0 +1,2 @@
+ALTER TABLE etkinlikler
+ADD COLUMN etkinlik_tarihi DATETIME NULL DEFAULT NULL AFTER yer;

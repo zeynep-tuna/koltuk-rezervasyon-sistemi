@@ -1,0 +1,167 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #EDEDED;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.admin-sidebar {
+    width: 260px;
+    background-color: #556B65;
+    padding: 20px 0;
+    flex-shrink: 0;
+}
+
+.sidebar-logo {
+    color: #fff;
+    font-weight: bold;
+    font-size: 19px;
+    padding: 20px 6px;
+    margin: 0 14px 10px 14px;
+    border-bottom: 1px solid #FFDAB9;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 14px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #dcdcdc;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.nav-item.aktif {
+    background-color: rgba(255, 218, 185, 0.18);
+    color: #FFDAB9;
+    border-left: 5px solid #FFDAB9;
+    padding-left: 20px;
+}
+
+/* Sağ taraf (topbar + içerik) */
+.admin-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-topbar {
+    background-color: #556B65;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-arama {
+    position: relative;
+}
+
+.admin-arama-ikon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #b0bab6;
+    pointer-events: none;
+}
+
+.admin-arama input {
+    padding: 10px 16px 10px 38px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    font-size: 14px;
+    width: 240px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.admin-arama input::placeholder {
+    color: #c2d2ce;
+}
+
+/* Çıkış / hesap açılır menüsü */
+.admin-menu {
+    position: relative;
+    margin-right: 24px;
+}
+
+.admin-menu-buton {
+    list-style: none;
+    cursor: pointer;
+    color: #fff;
+    font-size: 14px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.2);
+    user-select: none;
+}
+
+.admin-menu-buton::-webkit-details-marker {
+    display: none;
+}
+
+.admin-menu[open] .admin-menu-buton {
+    background-color: #FFDAB9;
+    color: #556B65;
+    border-color: #FFDAB9;
+}
+
+.admin-menu-icerik {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    min-width: 170px;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.admin-menu-icerik a {
+    display: block;
+    padding: 12px 16px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.admin-menu-icerik a:hover {
+    background-color: #EDEDED;
+}
+
+.admin-content {
+    padding: 30px;
+}
+
+.admin-content h1 {
+    margin-top: 0;
+    color: #222;
+}
