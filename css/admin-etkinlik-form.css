@@ -48,6 +48,96 @@ form input {
     font-size: 14px;
 }
 
+.hata-mesaj-inline {
+    color: #c62828;
+    font-size: 12.5px;
+    margin: 4px 0 0 0;
+}
+
+form input.input-hata,
+form select.input-hata {
+    border-color: #c62828;
+    background-color: #fff8f7;
+}
+
+.zorunlu-yildiz {
+    color: #c62828;
+    font-weight: bold;
+}
+
+.zorunlu-not {
+    font-size: 12.5px;
+    color: #777;
+    margin: -4px 0 14px 0;
+}
+
+.tarih-secim-grubu {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.tarih-secim-grubu select,
+.tarih-secim-grubu input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+.btn-tarih-temizle {
+    padding: 8px 10px;
+    background-color: #eee;
+    color: #666;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.btn-tarih-temizle:hover {
+    background-color: #ddd;
+}
+
+.yil-kutu-sarmalayici {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.yil-kutu-sarmalayici input {
+    width: 100%;
+}
+
+.yil-oneri-listesi {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    margin-bottom: 4px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 180px;
+    overflow-y: auto;
+    z-index: 20;
+}
+
+.yil-oneri-madde {
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.yil-oneri-madde:hover {
+    background-color: #EDEDED;
+}
+
 .basarili-mesaj {
     background-color: #e8f5e9;
     color: #2e7d32;
