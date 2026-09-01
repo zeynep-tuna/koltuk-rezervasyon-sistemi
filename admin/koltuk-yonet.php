@@ -146,10 +146,9 @@ $koridor_sonrasi = 5;
                                 <button type="button" class="btn-arac" onclick="tumunuSec()">Tümünü Seç</button>
                                 <button type="button" class="btn-arac" onclick="secimiTemizle()">Temizle</button>
                                 <span class="arac-ayrac"></span>
-                                <input type="text" id="aralik-baslangic" class="aralik-input" placeholder="A3">
+                                <input type="text" id="aralik-baslangic" class="aralik-input" placeholder="A3" autocomplete="off">
                                 <span class="aralik-ok">→</span>
-                                <input type="text" id="aralik-bitis" class="aralik-input" placeholder="B9">
-                                <button type="button" class="btn-arac" onclick="araligiSec()">Aralığı Seç</button>
+                                <input type="text" id="aralik-bitis" class="aralik-input" placeholder="B9" autocomplete="off">
                                 <span class="arac-sag-yasla"></span>
                                 <button type="submit" name="toplu_durum" value="bos" class="btn-arac btn-arac-bos">Boş Yap</button>
                                 <button type="submit" name="toplu_durum" value="dolu" class="btn-arac btn-arac-dolu">Dolu Yap</button>
@@ -197,17 +196,22 @@ $koridor_sonrasi = 5;
             document.querySelectorAll('.koltuk-checkbox').forEach(function (kutu) {
                 kutu.checked = false;
             });
+            document.getElementById('aralik-baslangic').value = '';
+            document.getElementById('aralik-bitis').value = '';
         }
 
         function araligiSec() {
             var baslangicKod = document.getElementById('aralik-baslangic').value.trim().toUpperCase();
             var bitisKod = document.getElementById('aralik-bitis').value.trim().toUpperCase();
 
+            if (baslangicKod === '' || bitisKod === '') {
+                return;
+            }
+
             var baslangicKutu = document.querySelector('.koltuk-checkbox[data-kod="' + baslangicKod + '"]');
             var bitisKutu = document.querySelector('.koltuk-checkbox[data-kod="' + bitisKod + '"]');
 
             if (!baslangicKutu || !bitisKutu) {
-                alert('Girdiğin koltuk kodlarından biri bulunamadı. Örnek format: A3');
                 return;
             }
 
@@ -221,6 +225,26 @@ $koridor_sonrasi = 5;
                 kutu.checked = (sira >= alt && sira <= ust);
             });
         }
+
+        ['aralik-baslangic', 'aralik-bitis'].forEach(function (id) {
+            document.getElementById(id).addEventListener('input', araligiSec);
+        });
+
+        window.addEventListener('pageshow', function () {
+            var b1 = document.getElementById('aralik-baslangic');
+            var b2 = document.getElementById('aralik-bitis');
+            if (b1) b1.value = '';
+            if (b2) b2.value = '';
+        });
+
+        ['aralik-baslangic', 'aralik-bitis'].forEach(function (id) {
+            document.getElementById(id).addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    araligiSec();
+                }
+            });
+        });
     </script>
 
 </body>
