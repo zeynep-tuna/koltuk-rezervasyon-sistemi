@@ -76,6 +76,14 @@ form select.input-hata {
     min-width: 0;
 }
 
+select option {
+    color: #222;
+}
+
+select option[value=""] {
+    color: #999;
+}
+
 .yil-kutu-sarmalayici {
     position: relative;
     flex: 1;
@@ -106,6 +114,7 @@ form select.input-hata {
     padding: 8px 12px;
     font-size: 14px;
     cursor: pointer;
+    color: #222;
 }
 
 .yil-oneri-madde:hover {

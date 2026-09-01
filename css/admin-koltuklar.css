@@ -1,0 +1,297 @@
+.geri-link {
+    display: inline-block;
+    margin-bottom: 10px;
+    color: #556B65;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.etkinlik-alt-bilgi {
+    color: #777;
+    font-size: 14px;
+    margin-top: -8px;
+    margin-bottom: 24px;
+}
+
+.koltuk-olustur-kutu {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.koltuk-olustur-kutu p {
+    color: #555;
+    margin-bottom: 18px;
+}
+
+.koltuk-olustur-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.koltuk-olustur-form label {
+    font-size: 13px;
+    color: #666;
+}
+
+.koltuk-olustur-form input[type="number"] {
+    width: 100px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.koltuk-olustur-kutu .btn-kaydet {
+    padding: 10px 22px;
+    background-color: #556B65;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.koltuk-olustur-kutu .btn-kaydet:hover {
+    background-color: #45564f;
+}
+
+.ust-kartlar-satiri {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    align-items: stretch;
+}
+
+.lejant-kart {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.lejant-madde {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+}
+
+.lejant-renk {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.lejant-bos {
+    background-color: #43A047;
+}
+
+.lejant-dolu {
+    background-color: #999;
+}
+
+.lejant-protokol {
+    background-color: #FFDAB9;
+}
+
+.arac-kart {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    padding: 14px 18px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.arac-sag-yasla {
+    margin-left: auto;
+}
+
+.arac-ayrac {
+    width: 1px;
+    height: 22px;
+    background-color: #ddd;
+    margin: 0 4px;
+}
+
+.arac-select {
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #fff;
+}
+
+.aralik-input {
+    width: 56px;
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.aralik-ok {
+    color: #999;
+    font-size: 14px;
+}
+
+.btn-arac {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #EDEDED;
+    color: #444;
+}
+
+.btn-arac:hover {
+    background-color: #ddd;
+}
+
+.btn-arac-bos {
+    background-color: #43A047;
+    color: #fff;
+}
+
+.btn-arac-bos:hover {
+    background-color: #35803a;
+}
+
+.btn-arac-dolu {
+    background-color: #757575;
+    color: #fff;
+}
+
+.btn-arac-dolu:hover {
+    background-color: #616161;
+}
+
+.btn-arac-protokol {
+    background-color: #FFDAB9;
+    color: #556B65;
+}
+
+.btn-arac-protokol:hover {
+    background-color: #ffc99c;
+}
+
+.sinema-kart {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.sinema-sahne {
+    background-color: #556B65;
+    color: #fff;
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sinema-govde {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+}
+
+.sinema-satir {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.satir-etiket-duz {
+    width: 22px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+    color: #777;
+}
+
+.satir-koltuklar {
+    display: flex;
+    gap: 6px;
+}
+
+.koridor-bosluk {
+    width: 24px;
+    flex-shrink: 0;
+}
+
+.koltuk-kutu {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.koltuk-kutu:hover {
+    transform: scale(1.1);
+}
+
+.koltuk-kutu input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+
+.koltuk-kutu:has(input:checked) {
+    box-shadow: 0 0 0 3px #556B65;
+}
+
+.koltuk-bos {
+    background-color: #43A047;
+}
+
+.koltuk-dolu {
+    background-color: #999;
+}
+
+.koltuk-protokol {
+    background-color: #FFDAB9;
+    color: #556B65;
+}

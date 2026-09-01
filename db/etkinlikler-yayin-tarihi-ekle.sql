@@ -1,0 +1,2 @@
+ALTER TABLE etkinlikler
+ADD COLUMN yayin_tarihi DATETIME NULL DEFAULT NULL AFTER aktif_mi;

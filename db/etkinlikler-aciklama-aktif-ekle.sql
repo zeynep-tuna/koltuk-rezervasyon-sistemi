@@ -1,0 +1,3 @@
+ALTER TABLE etkinlikler
+ADD COLUMN aciklama TEXT NULL DEFAULT NULL AFTER koltuk_sayisi,
+ADD COLUMN aktif_mi TINYINT(1) NOT NULL DEFAULT 1 AFTER aciklama;

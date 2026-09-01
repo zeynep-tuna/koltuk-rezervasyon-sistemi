@@ -13,6 +13,44 @@
     background-color: #256428;
 }
 
+.ust-eylem-satiri {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.ust-eylem-satiri .btn-ekle {
+    margin-bottom: 0;
+}
+
+.durum-segment {
+    display: flex;
+    background-color: #EDEDED;
+    border-radius: 999px;
+    padding: 4px;
+    gap: 2px;
+}
+
+.durum-segment-madde {
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #666;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.durum-segment-madde:hover {
+    color: #333;
+}
+
+.durum-segment-madde.segment-secili {
+    background-color: #556B65;
+    color: #fff;
+}
+
 .admin-tablo {
     width: 100%;
     border-collapse: collapse;

@@ -1,7 +1,7 @@
 <?php
 require '../includes/db.php';
 
-$stmt = $pdo->query("SELECT id, ad, yer, koltuk_sayisi FROM etkinlikler WHERE deleted = 0 ORDER BY id DESC");
+$stmt = $pdo->query("SELECT id, ad, yer, koltuk_sayisi FROM etkinlikler WHERE deleted = 0 ORDER BY id ASC");
 $etkinlikler = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -27,7 +27,7 @@ $etkinlikler = $stmt->fetchAll();
                 <table class="admin-tablo">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Sıra No</th>
                             <th>Etkinlik Adı</th>
                             <th>Yer</th>
                             <th>Koltuk Sayısı</th>
@@ -40,14 +40,14 @@ $etkinlikler = $stmt->fetchAll();
                                 <td colspan="5" class="bos-satir">Henüz eklenmiş etkinlik yok. Önce bir etkinlik eklemelisin.</td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($etkinlikler as $etkinlik): ?>
+                            <?php $sira = 1; foreach ($etkinlikler as $etkinlik): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($etkinlik['id']) ?></td>
+                                    <td><?= $sira++ ?></td>
                                     <td><?= htmlspecialchars($etkinlik['ad']) ?></td>
                                     <td><?= htmlspecialchars($etkinlik['yer']) ?></td>
-                                    <td><?= htmlspecialchars($etkinlik['koltuk_sayisi']) ?></td>
+                                    <td><?= $etkinlik['koltuk_sayisi'] !== null ? htmlspecialchars($etkinlik['koltuk_sayisi']) : '-' ?></td>
                                     <td class="islemler">
-                                        <a href="koltuk-yonet.php?etkinlik_id=<?= $etkinlik['id'] ?>">Koltukları Yönet</a>
+                                        <a href="koltuk-yonet.php?etkinlik_id=<?= $etkinlik['id'] ?>" class="btn-duzenle">Koltukları Yönet</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

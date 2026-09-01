@@ -12,10 +12,36 @@ form {
 }
 
 form label {
-    margin-top: 14px;
-    margin-bottom: 6px;
+    margin-top: 22px;
+    margin-bottom: 8px;
     font-size: 14px;
     color: #444;
+}
+
+.ikili-alan-satiri {
+    display: flex;
+    gap: 16px;
+}
+
+.ikili-alan {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ikili-alan input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ikili-alan label {
+    margin-top: 22px;
+}
+
+#ekle-yayin-blok label,
+#duzenle-yayin-blok label {
+    display: block;
 }
 
 form input {
@@ -23,6 +49,23 @@ form input {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 14px;
+}
+
+form select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: inherit;
+    background-color: #fff;
+}
+
+form select option {
+    color: #222;
+}
+
+form select option[value=""] {
+    color: #999;
 }
 
 .btn-kaydet {
@@ -65,16 +108,66 @@ form select.input-hata {
     font-weight: bold;
 }
 
+form textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.checkbox-etiket {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+}
+
+.checkbox-etiket input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.durum-rozet {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.durum-aktif {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.durum-gizli {
+    background-color: #fdecea;
+    color: #c62828;
+}
+
 .zorunlu-not {
     font-size: 12.5px;
     color: #777;
     margin: -4px 0 14px 0;
 }
 
+.yardim-notu {
+    font-size: 12.5px;
+    color: #777;
+    margin: 6px 0 0 0;
+}
+
 .tarih-secim-grubu {
     display: flex;
     gap: 8px;
     align-items: center;
+    margin-bottom: 12px;
 }
 
 .tarih-secim-grubu select,
@@ -132,6 +225,7 @@ form select.input-hata {
     padding: 8px 12px;
     font-size: 14px;
     cursor: pointer;
+    color: #222;
 }
 
 .yil-oneri-madde:hover {

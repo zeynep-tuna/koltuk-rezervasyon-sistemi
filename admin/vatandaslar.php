@@ -253,7 +253,11 @@ function telefon_formatla($tel) {
             <label>Doğum Tarihi <span class="zorunlu-yildiz">*</span></label>
             <div class="tarih-secim-grubu">
                 <select id="ekle-dogum-gun"><?= gun_secenekleri($ekle_gun) ?></select>
-                <select id="ekle-dogum-ay"><?= ay_secenekleri($aylar, $ekle_ay) ?></select>
+                <div class="yil-kutu-sarmalayici">
+                    <input type="text" id="ekle-dogum-ay-goster" placeholder="Ay" autocomplete="off" readonly value="<?= ($ekle_ay && isset($aylar[(int)$ekle_ay - 1])) ? $aylar[(int)$ekle_ay - 1] : '' ?>">
+                    <input type="hidden" id="ekle-dogum-ay" value="<?= htmlspecialchars($ekle_ay) ?>">
+                    <div class="yil-oneri-listesi" id="ekle-dogum-ay-oneri"></div>
+                </div>
                 <div class="yil-kutu-sarmalayici">
                     <input type="text" id="ekle-dogum-yil" placeholder="Yıl" autocomplete="off" value="<?= htmlspecialchars($ekle_yil) ?>">
                     <div class="yil-oneri-listesi" id="ekle-yil-oneri"></div>
@@ -299,7 +303,11 @@ function telefon_formatla($tel) {
             <label>Doğum Tarihi <span class="zorunlu-yildiz">*</span></label>
             <div class="tarih-secim-grubu">
                 <select id="duzenle-dogum-gun"><?= gun_secenekleri($duzenle_gun) ?></select>
-                <select id="duzenle-dogum-ay"><?= ay_secenekleri($aylar, $duzenle_ay) ?></select>
+                <div class="yil-kutu-sarmalayici">
+                    <input type="text" id="duzenle-dogum-ay-goster" placeholder="Ay" autocomplete="off" readonly value="<?= ($duzenle_ay && isset($aylar[(int)$duzenle_ay - 1])) ? $aylar[(int)$duzenle_ay - 1] : '' ?>">
+                    <input type="hidden" id="duzenle-dogum-ay" value="<?= htmlspecialchars($duzenle_ay) ?>">
+                    <div class="yil-oneri-listesi" id="duzenle-dogum-ay-oneri"></div>
+                </div>
                 <div class="yil-kutu-sarmalayici">
                     <input type="text" id="duzenle-dogum-yil" placeholder="Yıl" autocomplete="off" value="<?= htmlspecialchars($duzenle_yil) ?>">
                     <div class="yil-oneri-listesi" id="duzenle-yil-oneri"></div>
@@ -371,12 +379,17 @@ function telefon_formatla($tel) {
                 var parcalar = dogum.split('-');
                 document.getElementById('duzenle-dogum-yil').value = parcalar[0];
                 document.getElementById('duzenle-dogum-ay').value = parcalar[1];
+                document.getElementById('duzenle-dogum-ay-goster').value = parcalar[1] ? aylarListesi[parseInt(parcalar[1], 10) - 1] : '';
                 document.getElementById('duzenle-dogum-gun').value = parcalar[2];
             } else {
                 document.getElementById('duzenle-dogum-yil').value = '';
                 document.getElementById('duzenle-dogum-ay').value = '';
+                document.getElementById('duzenle-dogum-ay-goster').value = '';
                 document.getElementById('duzenle-dogum-gun').value = '';
             }
+            ['duzenle-dogum-gun'].forEach(function (id) {
+                document.getElementById(id).dispatchEvent(new Event('change'));
+            });
             document.getElementById('duzenle-modal').showModal();
         }
 
@@ -397,8 +410,9 @@ function telefon_formatla($tel) {
             });
             modal.querySelectorAll('select').forEach(function (sel) {
                 sel.value = '';
+                sel.dispatchEvent(new Event('change'));
             });
-            modal.querySelectorAll('input[type="hidden"][id$="-dogum"]').forEach(function (el) {
+            modal.querySelectorAll('input[type="hidden"][id$="-dogum"], input[type="hidden"][id$="-ay"]').forEach(function (el) {
                 el.value = '';
             });
             modal.querySelectorAll('.hata-mesaj-inline').forEach(function (p) {
@@ -428,7 +442,7 @@ function telefon_formatla($tel) {
                 gizli.value = yil + '-' + ay + '-' + gun;
                 if (hata) hata.style.display = 'none';
                 document.getElementById(prefix + '-dogum-gun').classList.remove('input-hata');
-                document.getElementById(prefix + '-dogum-ay').classList.remove('input-hata');
+                document.getElementById(prefix + '-dogum-ay-goster').classList.remove('input-hata');
                 document.getElementById(prefix + '-dogum-yil').classList.remove('input-hata');
             } else {
                 gizli.value = '';
@@ -438,17 +452,81 @@ function telefon_formatla($tel) {
         function tarihTemizle(prefix) {
             document.getElementById(prefix + '-dogum-gun').value = '';
             document.getElementById(prefix + '-dogum-ay').value = '';
+            document.getElementById(prefix + '-dogum-ay-goster').value = '';
             document.getElementById(prefix + '-dogum-yil').value = '';
             document.getElementById(prefix + '-dogum').value = '';
         }
 
         ['ekle', 'duzenle'].forEach(function (prefix) {
-            ['gun', 'ay'].forEach(function (parca) {
-                document.getElementById(prefix + '-dogum-' + parca).addEventListener('change', function () {
-                    tarihBirlestir(prefix);
-                });
+            document.getElementById(prefix + '-dogum-gun').addEventListener('change', function () {
+                tarihBirlestir(prefix);
             });
         });
+
+        var aylarListesi = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+        function aySecimBagla(prefix) {
+            var goster = document.getElementById(prefix + '-dogum-ay-goster');
+            var kodGizli = document.getElementById(prefix + '-dogum-ay');
+            var liste = document.getElementById(prefix + '-dogum-ay-oneri');
+
+            function listeyiCiz(filtre) {
+                liste.innerHTML = '';
+
+                var bosMadde = document.createElement('div');
+                bosMadde.className = 'yil-oneri-madde';
+                bosMadde.textContent = 'Ay';
+                bosMadde.style.color = '#999';
+                bosMadde.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    kodGizli.value = '';
+                    goster.value = '';
+                    liste.style.display = 'none';
+                    tarihBirlestir(prefix);
+                });
+                liste.appendChild(bosMadde);
+
+                aylarListesi.forEach(function (ad, index) {
+                    var kod = String(index + 1).padStart(2, '0');
+                    if (filtre !== '' && kod.indexOf(filtre) !== 0) return;
+                    var madde = document.createElement('div');
+                    madde.className = 'yil-oneri-madde';
+                    madde.textContent = ad;
+                    madde.addEventListener('mousedown', function (e) {
+                        e.preventDefault();
+                        kodGizli.value = kod;
+                        goster.value = ad;
+                        liste.style.display = 'none';
+                        tarihBirlestir(prefix);
+                    });
+                    liste.appendChild(madde);
+                });
+                liste.style.display = 'block';
+            }
+
+            goster.removeAttribute('readonly');
+            goster.addEventListener('input', function () {
+                var rakam = goster.value.replace(/[^0-9]/g, '');
+                listeyiCiz(rakam);
+            });
+
+            goster.addEventListener('focus', function () {
+                listeyiCiz('');
+            });
+
+            liste.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (e.target !== goster && !liste.contains(e.target)) {
+                    liste.style.display = 'none';
+                }
+            });
+        }
+
+        aySecimBagla('ekle');
+        aySecimBagla('duzenle');
 
 
         function telefonMaskele(input) {
@@ -489,8 +567,8 @@ function telefon_formatla($tel) {
             });
         }
 
-        enterSirayaBagla('ekle-form', ['ekle-tc', 'ekle-ad', 'ekle-soyad', 'ekle-dogum-gun', 'ekle-dogum-ay', 'ekle-dogum-yil', 'ekle-telefon']);
-        enterSirayaBagla('duzenle-form', ['duzenle-tc', 'duzenle-ad', 'duzenle-soyad', 'duzenle-dogum-gun', 'duzenle-dogum-ay', 'duzenle-dogum-yil', 'duzenle-telefon']);
+        enterSirayaBagla('ekle-form', ['ekle-tc', 'ekle-ad', 'ekle-soyad', 'ekle-dogum-gun', 'ekle-dogum-ay-goster', 'ekle-dogum-yil', 'ekle-telefon']);
+        enterSirayaBagla('duzenle-form', ['duzenle-tc', 'duzenle-ad', 'duzenle-soyad', 'duzenle-dogum-gun', 'duzenle-dogum-ay-goster', 'duzenle-dogum-yil', 'duzenle-telefon']);
 
 
         function yilOneriBagla(prefix) {
@@ -505,10 +583,23 @@ function telefon_formatla($tel) {
             function listeyiCiz(filtre) {
                 var eslesenler = tumYillar.filter(function (yil) {
                     return filtre === '' || yil.indexOf(filtre) === 0;
-                }).slice(0, 8);
+                });
                 liste.innerHTML = '';
-                if (eslesenler.length === 0) {
+
+                var bosMadde = document.createElement('div');
+                bosMadde.className = 'yil-oneri-madde';
+                bosMadde.textContent = 'Yıl';
+                bosMadde.style.color = '#999';
+                bosMadde.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    input.value = '';
                     liste.style.display = 'none';
+                    tarihBirlestir(prefix);
+                });
+                liste.appendChild(bosMadde);
+
+                if (eslesenler.length === 0) {
+                    liste.style.display = 'block';
                     return;
                 }
                 eslesenler.forEach(function (yil) {
@@ -533,13 +624,17 @@ function telefon_formatla($tel) {
             });
 
             input.addEventListener('focus', function () {
-                listeyiCiz(input.value);
+                listeyiCiz('');
             });
 
-            input.addEventListener('blur', function () {
-                setTimeout(function () {
+            liste.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (e.target !== input && !liste.contains(e.target)) {
                     liste.style.display = 'none';
-                }, 150);
+                }
             });
         }
 
@@ -569,10 +664,20 @@ function telefon_formatla($tel) {
             });
         }
 
+        function bosSecimGriBoya(selectId) {
+            var sel = document.getElementById(selectId);
+            function guncelle() {
+                sel.style.color = sel.value === '' ? '#999' : '#222';
+            }
+            sel.addEventListener('change', guncelle);
+            guncelle();
+        }
+
+        ['ekle-dogum-gun', 'duzenle-dogum-gun'].forEach(bosSecimGriBoya);
+
         yilOneriBagla('ekle');
         yilOneriBagla('duzenle');
-        aySayiGirisiBagla('ekle-dogum-ay');
-        aySayiGirisiBagla('duzenle-dogum-ay');
+
 
         function tcGecerliMi(tc) {
             if (tc.length !== 11 || !/^[0-9]{11}$/.test(tc) || tc[0] === '0') {
@@ -661,7 +766,7 @@ function telefon_formatla($tel) {
                     if (input.value.trim() === '') {
                         if (input.type === 'hidden' && alanId.indexOf('-dogum') !== -1) {
                             document.getElementById(alanId + '-gun').classList.add('input-hata');
-                            document.getElementById(alanId + '-ay').classList.add('input-hata');
+                            document.getElementById(alanId + '-ay-goster').classList.add('input-hata');
                             document.getElementById(alanId + '-yil').classList.add('input-hata');
                         } else {
                             input.classList.add('input-hata');

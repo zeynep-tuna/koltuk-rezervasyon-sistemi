@@ -1,0 +1,227 @@
+<?php
+require '../includes/db.php';
+
+$etkinlik_id = $_GET['etkinlik_id'] ?? '';
+
+if (!ctype_digit((string)$etkinlik_id)) {
+    header('Location: koltuklar.php');
+    exit;
+}
+
+$stmt = $pdo->prepare("SELECT id, ad, yer, koltuk_sayisi FROM etkinlikler WHERE id = :id AND deleted = 0");
+$stmt->execute(['id' => $etkinlik_id]);
+$etkinlik = $stmt->fetch();
+
+if (!$etkinlik) {
+    header('Location: koltuklar.php');
+    exit;
+}
+
+// Koltuk olusturma islemi
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['koltuk_olustur'])) {
+    $satir_basi_koltuk = (int)($_POST['satir_basi_koltuk'] ?? 10);
+    if ($satir_basi_koltuk < 1) {
+        $satir_basi_koltuk = 10;
+    }
+    $toplam = (int)$etkinlik['koltuk_sayisi'];
+    $harfler = range('A', 'Z');
+    $satir_index = 0;
+    $koltuk_no_index = 1;
+
+    $insert = $pdo->prepare("INSERT INTO koltuklar (etkinlik_id, koltuk_no, durum) VALUES (:etkinlik_id, :koltuk_no, 'bos')");
+
+    for ($i = 1; $i <= $toplam; $i++) {
+        $harf = $harfler[$satir_index] ?? 'Z';
+        $koltuk_no = $harf . $koltuk_no_index;
+
+        $insert->execute([
+            'etkinlik_id' => $etkinlik_id,
+            'koltuk_no' => $koltuk_no,
+        ]);
+
+        $koltuk_no_index++;
+        if ($koltuk_no_index > $satir_basi_koltuk) {
+            $koltuk_no_index = 1;
+            $satir_index++;
+        }
+    }
+
+    header('Location: koltuk-yonet.php?etkinlik_id=' . $etkinlik_id);
+    exit;
+}
+
+// Secilen koltuklarin durumunu topluca degistir
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toplu_durum'])) {
+    $yeni_durum = $_POST['toplu_durum'];
+    $secili_idler = $_POST['secili_koltuklar'] ?? [];
+    $gecerli_durumlar = ['bos', 'dolu', 'protokol'];
+
+    if (in_array($yeni_durum, $gecerli_durumlar) && count($secili_idler) > 0) {
+        $temiz_idler = array_filter($secili_idler, function ($v) {
+            return ctype_digit((string)$v);
+        });
+        if (count($temiz_idler) > 0) {
+            $yer_tutucular = implode(',', array_fill(0, count($temiz_idler), '?'));
+            $params = array_merge([$yeni_durum], array_values($temiz_idler), [$etkinlik_id]);
+            $sorgu = $pdo->prepare("UPDATE koltuklar SET durum = ? WHERE id IN ($yer_tutucular) AND etkinlik_id = ?");
+            $sorgu->execute($params);
+        }
+    }
+
+    header('Location: koltuk-yonet.php?etkinlik_id=' . $etkinlik_id);
+    exit;
+}
+
+$stmt = $pdo->prepare("SELECT id, koltuk_no, durum FROM koltuklar WHERE etkinlik_id = :etkinlik_id AND deleted = 0");
+$stmt->execute(['etkinlik_id' => $etkinlik_id]);
+$koltuklar_ham = $stmt->fetchAll();
+
+// Koltuklari satira gore grupla, her satir icinde numaraya gore dogru sirala
+$satirlar = [];
+foreach ($koltuklar_ham as $k) {
+    preg_match('/^([A-Z]+)(\d+)$/', $k['koltuk_no'], $m);
+    $harf = $m[1] ?? '?';
+    $numara = isset($m[2]) ? (int)$m[2] : 0;
+    $k['numara'] = $numara;
+    $satirlar[$harf][] = $k;
+}
+ksort($satirlar);
+foreach ($satirlar as $harf => &$satir_koltuklari) {
+    usort($satir_koltuklari, function ($a, $b) {
+        return $a['numara'] <=> $b['numara'];
+    });
+}
+unset($satir_koltuklari);
+
+$koltuklar_var_mi = count($koltuklar_ham) > 0;
+$koridor_sonrasi = 5;
+?>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Paneli - Koltukları Yönet</title>
+    <link rel="stylesheet" href="../css/admin-layout.css">
+    <link rel="stylesheet" href="../css/admin-koltuklar.css">
+</head>
+<body>
+
+    <div class="admin-layout">
+        <?php require '../includes/admin-sidebar.php'; ?>
+
+        <div class="admin-main">
+            <?php require '../includes/admin-topbar.php'; ?>
+
+            <div class="admin-content">
+                <a href="koltuklar.php" class="geri-link">← Etkinlik Listesine Dön</a>
+                <h1><?= htmlspecialchars($etkinlik['ad']) ?></h1>
+                <p class="etkinlik-alt-bilgi"><?= htmlspecialchars($etkinlik['yer']) ?><?= $etkinlik['koltuk_sayisi'] !== null ? ' · ' . (int)$etkinlik['koltuk_sayisi'] . ' koltuk' : '' ?></p>
+
+                <?php if ($etkinlik['koltuk_sayisi'] === null): ?>
+                    <div class="koltuk-olustur-kutu">
+                        <p>Bu etkinliğin koltuk sayısı henüz belirtilmemiş. Koltuk oluşturabilmek için önce Etkinlikler sayfasından bu etkinliği düzenleyip koltuk sayısını girmelisin.</p>
+                        <a href="etkinlikler.php" class="btn-kaydet" style="display:inline-block; text-decoration:none;">Etkinlikler Sayfasına Git</a>
+                    </div>
+                <?php elseif (!$koltuklar_var_mi): ?>
+                    <div class="koltuk-olustur-kutu">
+                        <p>Bu etkinlik için henüz koltuk oluşturulmadı.</p>
+                        <form method="POST" action="koltuk-yonet.php?etkinlik_id=<?= $etkinlik_id ?>" class="koltuk-olustur-form">
+                            <input type="hidden" name="koltuk_olustur" value="1">
+                            <label for="satir-basi-koltuk">Bir sırada kaç koltuk olsun?</label>
+                            <input type="number" id="satir-basi-koltuk" name="satir_basi_koltuk" min="1" value="10">
+                            <button type="submit" class="btn-kaydet">Koltukları Oluştur</button>
+                        </form>
+                    </div>
+                <?php else: ?>
+                    <form method="POST" action="koltuk-yonet.php?etkinlik_id=<?= $etkinlik_id ?>" id="toplu-form">
+
+                        <div class="ust-kartlar-satiri">
+                            <div class="lejant-kart">
+                                <span class="lejant-madde"><span class="lejant-renk lejant-bos"></span> Boş</span>
+                                <span class="lejant-madde"><span class="lejant-renk lejant-dolu"></span> Dolu</span>
+                                <span class="lejant-madde"><span class="lejant-renk lejant-protokol"></span> Protokol</span>
+                            </div>
+
+                            <div class="arac-kart">
+                                <button type="button" class="btn-arac" onclick="tumunuSec()">Tümünü Seç</button>
+                                <button type="button" class="btn-arac" onclick="secimiTemizle()">Temizle</button>
+                                <span class="arac-ayrac"></span>
+                                <input type="text" id="aralik-baslangic" class="aralik-input" placeholder="A3">
+                                <span class="aralik-ok">→</span>
+                                <input type="text" id="aralik-bitis" class="aralik-input" placeholder="B9">
+                                <button type="button" class="btn-arac" onclick="araligiSec()">Aralığı Seç</button>
+                                <span class="arac-sag-yasla"></span>
+                                <button type="submit" name="toplu_durum" value="bos" class="btn-arac btn-arac-bos">Boş Yap</button>
+                                <button type="submit" name="toplu_durum" value="dolu" class="btn-arac btn-arac-dolu">Dolu Yap</button>
+                                <button type="submit" name="toplu_durum" value="protokol" class="btn-arac btn-arac-protokol">Protokol Yap</button>
+                            </div>
+                        </div>
+
+                        <div class="sinema-kart">
+                        <div class="sinema-sahne">SAHNE / EKRAN</div>
+
+                        <div class="sinema-govde">
+                            <?php $genel_sira = 0; foreach ($satirlar as $harf => $satir_koltuklari): ?>
+                                <div class="sinema-satir">
+                                    <span class="satir-etiket-duz"><?= htmlspecialchars($harf) ?></span>
+                                    <div class="satir-koltuklar" data-satir="satir-<?= $harf ?>">
+                                        <?php foreach ($satir_koltuklari as $index => $koltuk): ?>
+                                            <?php if ($index > 0 && $index === $koridor_sonrasi): ?>
+                                                <div class="koridor-bosluk"></div>
+                                            <?php endif; ?>
+                                            <label class="koltuk-kutu koltuk-<?= $koltuk['durum'] ?>" title="<?= htmlspecialchars($koltuk['koltuk_no']) ?>">
+                                                <input type="checkbox" name="secili_koltuklar[]" value="<?= $koltuk['id'] ?>" class="koltuk-checkbox satir-<?= $harf ?>" data-sira="<?= $genel_sira++ ?>" data-harf="<?= $harf ?>" data-kod="<?= htmlspecialchars($koltuk['koltuk_no']) ?>">
+                                                <span><?= $koltuk['numara'] ?></span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <span class="satir-etiket-duz"><?= htmlspecialchars($harf) ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        </div>
+                    </form>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function tumunuSec() {
+            document.querySelectorAll('.koltuk-checkbox').forEach(function (kutu) {
+                kutu.checked = true;
+            });
+        }
+
+        function secimiTemizle() {
+            document.querySelectorAll('.koltuk-checkbox').forEach(function (kutu) {
+                kutu.checked = false;
+            });
+        }
+
+        function araligiSec() {
+            var baslangicKod = document.getElementById('aralik-baslangic').value.trim().toUpperCase();
+            var bitisKod = document.getElementById('aralik-bitis').value.trim().toUpperCase();
+
+            var baslangicKutu = document.querySelector('.koltuk-checkbox[data-kod="' + baslangicKod + '"]');
+            var bitisKutu = document.querySelector('.koltuk-checkbox[data-kod="' + bitisKod + '"]');
+
+            if (!baslangicKutu || !bitisKutu) {
+                alert('Girdiğin koltuk kodlarından biri bulunamadı. Örnek format: A3');
+                return;
+            }
+
+            var baslaSira = parseInt(baslangicKutu.dataset.sira, 10);
+            var bitisSira = parseInt(bitisKutu.dataset.sira, 10);
+            var alt = Math.min(baslaSira, bitisSira);
+            var ust = Math.max(baslaSira, bitisSira);
+
+            document.querySelectorAll('.koltuk-checkbox').forEach(function (kutu) {
+                var sira = parseInt(kutu.dataset.sira, 10);
+                kutu.checked = (sira >= alt && sira <= ust);
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,2 @@
+ALTER TABLE etkinlikler
+MODIFY COLUMN koltuk_sayisi INT NULL DEFAULT NULL;
