@@ -30,6 +30,12 @@
                         <p>Etkinlik ekle, düzenle, sil ve koltukları yönet.</p>
                     </a>
 
+                    <a href="takvim.php" class="dashboard-kart">
+                        <div class="kart-ikon kart-ikon-mavi">🗓️</div>
+                        <h2>Takvim</h2>
+                        <p>Etkinlikleri aylık takvim görünümünde incele.</p>
+                    </a>
+
                     <a href="koltuklar.php" class="dashboard-kart">
                         <div class="kart-ikon kart-ikon-mavi">💺</div>
                         <h2>Koltuklar</h2>

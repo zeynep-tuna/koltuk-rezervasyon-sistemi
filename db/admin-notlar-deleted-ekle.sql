@@ -1,0 +1,2 @@
+ALTER TABLE admin_notlar
+ADD COLUMN deleted TINYINT(1) NOT NULL DEFAULT 0;

@@ -1,0 +1,417 @@
+.takvim-sayfa-duzeni {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.takvim-kart {
+    background-color: #F7F7F5;
+    border-radius: 14px;
+    padding: 28px 32px;
+    max-width: 560px;
+    flex: 1;
+}
+
+.takvim-baslik-satiri {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+
+.takvim-ay-yil {
+    font-size: 17px;
+    font-weight: bold;
+    color: #333;
+}
+
+.takvim-gezinme {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.takvim-ok {
+    color: #888;
+    font-size: 16px;
+    text-decoration: none;
+    width: 20px;
+    text-align: center;
+}
+
+.takvim-ok:hover {
+    color: #333;
+}
+
+.takvim-hafta-satiri {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 14px;
+}
+
+.takvim-izgara {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 12px;
+}
+
+.takvim-gun {
+    text-align: center;
+    text-decoration: none;
+    position: relative;
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.takvim-gun-soluk {
+    color: #ccc;
+}
+
+.takvim-gun-no {
+    font-size: 14px;
+    color: #333;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.takvim-gun-soluk .takvim-gun-no {
+    color: #ccc;
+}
+
+.takvim-gun-bugun {
+    background-color: #556B65;
+    color: #fff;
+    font-weight: bold;
+}
+
+.takvim-gun-secili {
+    background-color: #EDEDED;
+    font-weight: bold;
+}
+
+.takvim-nokta-grubu {
+    display: flex;
+    gap: 3px;
+    margin-top: 4px;
+    height: 4px;
+}
+
+.takvim-nokta {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+}
+
+.takvim-nokta-aktif {
+    background-color: #43A047;
+}
+
+.takvim-nokta-gizli {
+    background-color: #c62828;
+}
+
+.takvim-nokta-not {
+    background-color: #556B65;
+}
+
+.takvim-hover-onizleme {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 12px 14px;
+    min-width: 190px;
+    max-width: 240px;
+    z-index: 20;
+    text-align: left;
+}
+
+.takvim-gun-etkinlikli:hover .takvim-hover-onizleme {
+    display: block;
+}
+
+.onizleme-tarih {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 6px;
+}
+
+.onizleme-satir {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #333;
+    padding: 3px 0;
+}
+
+.onizleme-tamamlandi {
+    color: #aaa;
+    text-decoration: line-through;
+}
+
+.onizleme-nokta {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+/* Sag taraf - yan yana iki kutu */
+.yan-sutun {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    flex: 1;
+    max-height: 460px;
+}
+
+.not-kart {
+    background-color: #F7F7F5;
+    border-radius: 14px;
+    padding: 22px;
+    overflow-y: auto;
+    flex: 1.3;
+    min-height: 0;
+    min-width: 0;
+}
+
+.not-yaz-kart {
+    background-color: #F7F7F5;
+    border-radius: 14px;
+    padding: 20px;
+    flex: 1;
+    min-width: 0;
+    align-self: flex-start;
+}
+
+.not-kart-tarih {
+    font-size: 13px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 14px;
+}
+
+.alt-panel-satir {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: #333;
+    text-decoration: none;
+    padding: 6px 0;
+}
+
+.alt-panel-satir:hover {
+    color: #556B65;
+}
+
+.alt-panel-bos {
+    font-size: 13px;
+    color: #999;
+    margin: 0;
+}
+
+.notun-baslik {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    margin: 16px 0 8px 0;
+    padding-top: 14px;
+    border-top: 1px solid #e5e5e0;
+}
+
+.not-listesi {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.not-satiri {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 0;
+    flex-wrap: wrap;
+}
+
+.not-mini-form {
+    margin: 0;
+}
+
+.not-tamamla-kutu {
+    width: 15px;
+    height: 15px;
+    border: 1.5px solid #bbb;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    cursor: pointer;
+    background-color: #fff;
+    padding: 0;
+}
+
+.not-tamamla-kutu-isaretli {
+    background-color: #43A047;
+    border-color: #43A047;
+}
+
+.not-metni-goster {
+    flex: 1;
+    min-width: 100px;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+    cursor: pointer;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.not-tamamlandi {
+    color: #aaa;
+    text-decoration: line-through;
+}
+
+.not-eylem-simgeleri {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.not-eylem-btn {
+    background: none;
+    border: none;
+    color: #bbb;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px 3px;
+}
+
+.not-eylem-btn:hover {
+    color: #556B65;
+}
+
+.not-duzenle-formu {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 6px;
+}
+
+.not-duzenle-formu-acik {
+    display: flex;
+}
+
+.not-duzenle-formu textarea {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    word-break: break-word;
+}
+
+.not-duzenle-butonlari {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.btn-not-vazgec {
+    padding: 5px 12px;
+    background-color: #EDEDED;
+    color: #555;
+    border: none;
+    border-radius: 5px;
+    font-size: 11.5px;
+    cursor: pointer;
+}
+
+.btn-not-kaydet-kucuk {
+    padding: 5px 12px;
+    background-color: #556B65;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 11.5px;
+    cursor: pointer;
+}
+
+.not-yaz-baslik {
+    font-size: 13px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.not-formu {
+    display: flex;
+    flex-direction: column;
+}
+
+.not-formu textarea {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    word-break: break-word;
+    background-color: #fff;
+}
+
+.btn-not-kaydet {
+    margin-top: 10px;
+    align-self: flex-start;
+    padding: 7px 16px;
+    background-color: #556B65;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.btn-not-kaydet:hover {
+    background-color: #45564f;
+}
+
+.toast-bildirim {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background-color: #2e7d32;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    animation: toast-giris 0.3s ease;
+}
+
+.toast-bildirim.toast-kayboluyor {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+@keyframes toast-giris {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
