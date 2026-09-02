@@ -152,7 +152,24 @@ $secili_gun_notlari = $secili_gun > 0 ? ($gune_gore_notlar[$secili_gun] ?? []) :
                 <div class="takvim-sayfa-duzeni">
                 <div class="takvim-kart">
                     <div class="takvim-baslik-satiri">
-                        <span class="takvim-ay-yil"><?= $aylar[$ay - 1] ?> <?= $yil ?></span>
+                        <div class="ay-yil-secici">
+                            <div class="ozel-secici-sarmalayici">
+                                <button type="button" class="ozel-secici-buton" onclick="ozelListeAcKapa('ay-liste')"><?= $aylar[$ay - 1] ?></button>
+                                <div class="ozel-secici-liste" id="ay-liste">
+                                    <?php foreach ($aylar as $index => $ay_adi): ?>
+                                        <div class="ozel-secici-madde <?= ($index + 1) === $ay ? 'ozel-secici-madde-secili' : '' ?>" onclick="ayYilSec(<?= $index + 1 ?>, <?= $yil ?>)"><?= $ay_adi ?></div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <div class="ozel-secici-sarmalayici">
+                                <button type="button" class="ozel-secici-buton" onclick="ozelListeAcKapa('yil-liste')"><?= $yil ?></button>
+                                <div class="ozel-secici-liste" id="yil-liste">
+                                    <?php for ($y = 2025; $y <= $bu_yil + 5; $y++): ?>
+                                        <div class="ozel-secici-madde <?= $y === $yil ? 'ozel-secici-madde-secili' : '' ?>" onclick="ayYilSec(<?= $ay ?>, <?= $y ?>)"><?= $y ?></div>
+                                    <?php endfor; ?>
+                                </div>
+                            </div>
+                        </div>
                         <div class="takvim-gezinme">
                             <a href="takvim.php?ay=<?= $onceki_ay ?>&yil=<?= $onceki_yil ?>" class="takvim-ok">‹</a>
                             <a href="takvim.php?ay=<?= $sonraki_ay ?>&yil=<?= $sonraki_yil ?>" class="takvim-ok">›</a>
@@ -286,23 +303,58 @@ $secili_gun_notlari = $secili_gun > 0 ? ($gune_gore_notlar[$secili_gun] ?? []) :
                             </div>
                         <?php endif; ?>
                     <?php else: ?>
-                        <p class="alt-panel-bos">Detayları görmek için takvimden bir gün seç.</p>
+                        <?php
+                        $ay_gunleri_dolu = array_unique(array_merge(array_keys($gune_gore_etkinlikler), array_keys($gune_gore_notlar)));
+                        sort($ay_gunleri_dolu);
+                        ?>
+                        <?php if (count($ay_gunleri_dolu) === 0): ?>
+                            <p class="alt-panel-bos">Bu ayda hiç etkinlik veya not yok.</p>
+                        <?php else: ?>
+                            <div class="not-kart-tarih">Bu Ayın Tamamı</div>
+                            <?php foreach ($ay_gunleri_dolu as $gun_no): ?>
+                                <?php $gun_haftanin_kaci = (int)date('N', strtotime("$yil-" . str_pad($ay, 2, '0', STR_PAD_LEFT) . "-" . str_pad($gun_no, 2, '0', STR_PAD_LEFT))); ?>
+                                <a href="takvim.php?ay=<?= $ay ?>&yil=<?= $yil ?>&secili=<?= $gun_no ?>" class="ay-liste-gun-baslik"><?= $gun_no ?> <?= $aylar[$ay - 1] ?> <?= $gun_isimleri_uzun[$gun_haftanin_kaci - 1] ?></a>
+                                <?php if (isset($gune_gore_etkinlikler[$gun_no])): ?>
+                                    <?php foreach ($gune_gore_etkinlikler[$gun_no] as $e): ?>
+                                        <div class="alt-panel-satir">
+                                            <span class="onizleme-nokta <?= $e['aktif_mi'] ? 'takvim-nokta-aktif' : 'takvim-nokta-gizli' ?>"></span>
+                                            <?= $e['etkinlik_saat'] ? substr($e['etkinlik_saat'], 0, 5) . ' — ' : '' ?><?= htmlspecialchars($e['ad']) ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                <?php if (isset($gune_gore_notlar[$gun_no])): ?>
+                                    <?php foreach ($gune_gore_notlar[$gun_no] as $n): ?>
+                                        <div class="alt-panel-satir <?= $n['tamamlandi'] ? 'onizleme-tamamlandi' : '' ?>">
+                                            <span class="onizleme-nokta takvim-nokta-not"></span>
+                                            <?= nl2br(htmlspecialchars($n['not_metni'])) ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
 
-                <?php if ($secili_gun > 0): ?>
-                    <div class="not-yaz-kart">
-                        <div class="not-yaz-baslik">Not Ekle</div>
-                        <form method="POST" action="takvim.php" class="not-formu">
-                            <textarea id="not-metni" name="not_metni" rows="3" placeholder="Bir not yaz..."></textarea>
-                            <input type="hidden" name="not_ay" value="<?= $ay ?>">
-                            <input type="hidden" name="not_yil" value="<?= $yil ?>">
+                <div class="not-yaz-kart">
+                    <div class="not-yaz-baslik">Not Ekle</div>
+                    <form method="POST" action="takvim.php" class="not-formu">
+                        <?php if ($secili_gun === 0): ?>
+                            <label for="not-gun-secici" class="not-gun-etiket">Gün</label>
+                            <select id="not-gun-secici" name="not_gun" class="not-gun-secici">
+                                <?php for ($g = 1; $g <= $ayin_gun_sayisi; $g++): ?>
+                                    <option value="<?= $g ?>" <?= $g === (int)date('j') && $ay === $bu_ay && $yil === $bu_yil ? 'selected' : '' ?>><?= $g ?> <?= $aylar[$ay - 1] ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        <?php else: ?>
                             <input type="hidden" name="not_gun" value="<?= $secili_gun ?>">
-                            <input type="hidden" name="not_ekle" value="1">
-                            <button type="submit" class="btn-not-kaydet">Ekle</button>
-                        </form>
-                    </div>
-                <?php endif; ?>
+                        <?php endif; ?>
+                        <textarea id="not-metni" name="not_metni" rows="3" placeholder="Bir not yaz..."></textarea>
+                        <input type="hidden" name="not_ay" value="<?= $ay ?>">
+                        <input type="hidden" name="not_yil" value="<?= $yil ?>">
+                        <input type="hidden" name="not_ekle" value="1">
+                        <button type="submit" class="btn-not-kaydet">Ekle</button>
+                    </form>
+                </div>
                 </div>
                 </div>
             </div>
@@ -310,6 +362,26 @@ $secili_gun_notlari = $secili_gun > 0 ? ($gune_gore_notlar[$secili_gun] ?? []) :
     </div>
 
     <script>
+        function ozelListeAcKapa(id) {
+            document.querySelectorAll('.ozel-secici-liste').forEach(function (el) {
+                if (el.id !== id) el.style.display = 'none';
+            });
+            var liste = document.getElementById(id);
+            liste.style.display = (liste.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function ayYilSec(ay, yil) {
+            window.location.href = 'takvim.php?ay=' + ay + '&yil=' + yil;
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.ozel-secici-sarmalayici')) {
+                document.querySelectorAll('.ozel-secici-liste').forEach(function (el) {
+                    el.style.display = 'none';
+                });
+            }
+        });
+
         function notDuzenleAc(id) {
             document.getElementById('not-duzenle-' + id).classList.add('not-duzenle-formu-acik');
         }

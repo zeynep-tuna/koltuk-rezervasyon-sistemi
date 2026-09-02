@@ -25,6 +25,80 @@
     color: #333;
 }
 
+.ay-yil-secici {
+    display: flex;
+    gap: 6px;
+}
+
+.ozel-secici-sarmalayici {
+    position: relative;
+}
+
+.ozel-secici-buton {
+    border: none;
+    background-color: transparent;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.ozel-secici-buton:hover {
+    background-color: #EDEDED;
+}
+
+.ozel-secici-liste {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 30;
+    min-width: 110px;
+}
+
+.ozel-secici-madde {
+    padding: 7px 12px;
+    font-size: 13px;
+    color: #333;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.ozel-secici-madde:hover {
+    background-color: #F7F7F5;
+}
+
+.ozel-secici-madde-secili {
+    background-color: #556B65;
+    color: #fff;
+}
+
+.not-gun-etiket {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.not-gun-secici {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-family: inherit;
+    margin-bottom: 8px;
+    background-color: #fff;
+}
+
 .takvim-gezinme {
     display: flex;
     align-items: center;
@@ -204,6 +278,27 @@
     font-weight: bold;
     color: #333;
     margin-bottom: 14px;
+}
+
+.ay-liste-gun-baslik {
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #556B65;
+    text-decoration: none;
+    margin: 16px 0 4px 0;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.ay-liste-gun-baslik:hover {
+    text-decoration: underline;
+}
+
+.not-kart-tarih + .ay-liste-gun-baslik {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
 }
 
 .alt-panel-satir {
