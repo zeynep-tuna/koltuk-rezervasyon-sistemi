@@ -1,0 +1,109 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #EDEDED;
+    font-family: Arial, sans-serif;
+}
+
+.giris-kutu {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 340px;
+}
+
+.giris-kutu h1 {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    color: #333;
+    text-align: center;
+}
+
+.giris-alt-baslik {
+    margin: 0 0 24px 0;
+    font-size: 13px;
+    color: #999;
+    text-align: center;
+}
+
+.giris-hata {
+    background-color: #fdecea;
+    color: #c62828;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.giris-kutu form {
+    display: flex;
+    flex-direction: column;
+}
+
+.giris-kutu label {
+    font-size: 13px;
+    color: #444;
+    margin-top: 14px;
+    margin-bottom: 6px;
+}
+
+.giris-kutu input {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sifre-alani {
+    position: relative;
+}
+
+.sifre-alani input {
+    padding-right: 40px;
+}
+
+.sifre-goster-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.sifre-goster-btn:hover {
+    color: #556B65;
+}
+
+.giris-kutu button[type="submit"] {
+    margin-top: 24px;
+    padding: 11px;
+    background-color: #556B65;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.giris-kutu button[type="submit"]:hover {
+    background-color: #45564f;
+}

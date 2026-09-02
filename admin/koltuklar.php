@@ -1,4 +1,5 @@
 <?php
+require '../includes/admin-auth-kontrol.php';
 require '../includes/db.php';
 
 $stmt = $pdo->query("SELECT id, ad, yer, koltuk_sayisi FROM etkinlikler WHERE deleted = 0 ORDER BY id ASC");

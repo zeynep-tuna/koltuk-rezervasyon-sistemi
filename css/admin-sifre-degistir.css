@@ -1,0 +1,126 @@
+/* admin-sifre-degistir.css - SADECE admin/sifre-degistir.php sayfasına ait stiller */
+
+.sifre-form-kutu {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    padding: 28px 32px;
+    max-width: 400px;
+}
+
+.sifre-form-kutu form {
+    display: flex;
+    flex-direction: column;
+}
+
+.sifre-form-kutu label {
+    margin-top: 18px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #444;
+}
+
+.sifre-form-kutu label:first-of-type {
+    margin-top: 0;
+}
+
+.sifre-alani {
+    position: relative;
+}
+
+.sifre-alani input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 40px 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.sifre-alani input.input-hata {
+    border-color: #c62828;
+    background-color: #fff8f7;
+}
+
+.sifre-goster-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.sifre-goster-btn:hover {
+    color: #556B65;
+}
+
+.hata-mesaj-inline {
+    color: #c62828;
+    font-size: 12px;
+    margin: 4px 0 0 0;
+}
+
+.hata-mesaj-genel {
+    background-color: #fdecea;
+    color: #c62828;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.btn-kaydet {
+    margin-top: 24px;
+    padding: 11px;
+    background-color: #556B65;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-kaydet:hover {
+    background-color: #45564f;
+}
+
+.toast-bildirim {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    animation: toast-giris 0.3s ease;
+}
+
+.toast-eklendi {
+    background-color: #2e7d32;
+}
+
+.toast-bildirim.toast-kayboluyor {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+@keyframes toast-giris {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

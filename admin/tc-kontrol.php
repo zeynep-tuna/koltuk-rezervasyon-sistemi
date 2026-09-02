@@ -1,4 +1,5 @@
 <?php
+require '../includes/admin-auth-kontrol.php';
 require '../includes/db.php';
 header('Content-Type: application/json');
 

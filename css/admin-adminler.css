@@ -1,0 +1,272 @@
+/* admin-adminler.css - SADECE admin/adminler.php sayfasına ait stiller */
+
+.dashboard-alt-baslik {
+    color: #777;
+    margin-top: -6px;
+    margin-bottom: 26px;
+    font-size: 14px;
+}
+
+.basari-mesaj {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.toast-bildirim {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    animation: toast-giris 0.3s ease;
+}
+
+.toast-eklendi {
+    background-color: #2e7d32;
+}
+
+.toast-silindi {
+    background-color: #c62828;
+}
+
+.toast-bildirim.toast-kayboluyor {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+@keyframes toast-giris {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hata-mesaj-genel {
+    background-color: #fdecea;
+    color: #c62828;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 14px;
+}
+
+.sen-etiketi {
+    color: #999;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.btn-ekle {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 10px 18px;
+    background-color: #2e7d32;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-ekle:hover {
+    background-color: #256428;
+}
+
+.admin-tablo {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.admin-tablo th,
+.admin-tablo td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.admin-tablo th {
+    background-color: #dde1de;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #4a4a4a;
+}
+
+.bos-satir {
+    text-align: center;
+    color: #888;
+    padding: 30px 0;
+}
+
+.islemler a,
+.islemler button {
+    text-decoration: none;
+    font-size: 13px;
+    font-family: inherit;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: none;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.btn-sil {
+    background-color: #c62828;
+    color: #fff;
+}
+
+.btn-sil:hover {
+    background-color: #a02020;
+}
+
+/* Modal (pop-up) */
+.modal {
+    border: none;
+    border-radius: 12px;
+    padding: 28px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal h2 {
+    margin-top: 0;
+    color: #1F1F1F;
+}
+
+.modal form {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal label {
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #444;
+}
+
+.modal input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.zorunlu-yildiz {
+    color: #c62828;
+    font-weight: bold;
+}
+
+.modal input.input-hata {
+    border-color: #c62828;
+    background-color: #fff8f7;
+}
+
+.hata-mesaj-inline {
+    color: #c62828;
+    font-size: 12px;
+    margin: 4px 0 0 0;
+}
+
+.modal-butonlar {
+    display: flex;
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.modal-kucuk {
+    max-width: 360px;
+}
+
+.modal-ortali {
+    text-align: center;
+}
+
+.modal-ortali h2 {
+    margin-bottom: 10px;
+}
+
+.uyari-ikon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #fdecea;
+    color: #c62828;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.onay-mesaji {
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.btn-sil-onayla {
+    padding: 10px 18px;
+    background-color: #c62828;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-sil-onayla:hover {
+    background-color: #a02020;
+}
+
+.btn-vazgec {
+    padding: 10px 18px;
+    background-color: #d8d8d8;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-vazgec:hover {
+    background-color: #c8c8c8;
+}
+
+.btn-kaydet {
+    padding: 10px 18px;
+    background-color: #556B65;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-kaydet:hover {
+    background-color: #45564f;
+}

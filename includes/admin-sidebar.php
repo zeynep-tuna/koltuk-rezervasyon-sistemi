@@ -14,5 +14,8 @@ function aktif_class($sayfa_adlari, $mevcut_sayfa) {
         <a href="koltuklar.php" class="nav-item<?= aktif_class(['koltuklar.php', 'koltuk-yonet.php'], $mevcut_sayfa) ?>">Koltuklar</a>
         <a href="vatandaslar.php" class="nav-item<?= aktif_class('vatandaslar.php', $mevcut_sayfa) ?>">Vatandaşlar</a>
         <a href="rezervasyonlar.php" class="nav-item<?= aktif_class('rezervasyonlar.php', $mevcut_sayfa) ?>">Rezervasyonlar</a>
+        <?php if (!empty($_SESSION['admin_ana_admin'])): ?>
+            <a href="adminler.php" class="nav-item<?= aktif_class('adminler.php', $mevcut_sayfa) ?>">Adminler</a>
+        <?php endif; ?>
     </nav>
 </aside>

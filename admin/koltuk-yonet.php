@@ -1,4 +1,5 @@
 <?php
+require '../includes/admin-auth-kontrol.php';
 require '../includes/db.php';
 
 $etkinlik_id = $_GET['etkinlik_id'] ?? '';
@@ -94,6 +95,14 @@ foreach ($satirlar as $harf => &$satir_koltuklari) {
 unset($satir_koltuklari);
 
 $koltuklar_var_mi = count($koltuklar_ham) > 0;
+
+$sayim = ['bos' => 0, 'dolu' => 0, 'protokol' => 0];
+foreach ($koltuklar_ham as $k) {
+    if (isset($sayim[$k['durum']])) {
+        $sayim[$k['durum']]++;
+    }
+}
+$toplam_koltuk = count($koltuklar_ham);
 $koridor_sonrasi = 5;
 ?>
 <!DOCTYPE html>
@@ -114,8 +123,18 @@ $koridor_sonrasi = 5;
 
             <div class="admin-content">
                 <a href="koltuklar.php" class="geri-link">← Etkinlik Listesine Dön</a>
-                <h1><?= htmlspecialchars($etkinlik['ad']) ?></h1>
-                <p class="etkinlik-alt-bilgi"><?= htmlspecialchars($etkinlik['yer']) ?><?= $etkinlik['koltuk_sayisi'] !== null ? ' · ' . (int)$etkinlik['koltuk_sayisi'] . ' koltuk' : '' ?></p>
+                <div class="baslik-satiri">
+                    <h1><?= htmlspecialchars($etkinlik['ad']) ?></h1>
+                    <?php if ($koltuklar_var_mi): ?>
+                        <div class="doluluk-kapsul">
+                            <span class="doluluk-rozet doluluk-rozet-toplam"><?= $toplam_koltuk ?> Toplam</span>
+                            <span class="doluluk-rozet doluluk-rozet-bos"><?= $sayim['bos'] ?> Boş</span>
+                            <span class="doluluk-rozet doluluk-rozet-dolu"><?= $sayim['dolu'] ?> Dolu</span>
+                            <span class="doluluk-rozet doluluk-rozet-protokol"><?= $sayim['protokol'] ?> Protokol</span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <p class="etkinlik-alt-bilgi"><?= htmlspecialchars($etkinlik['yer']) ?></p>
 
                 <?php if ($etkinlik['koltuk_sayisi'] === null): ?>
                     <div class="koltuk-olustur-kutu">
@@ -235,15 +254,32 @@ $koridor_sonrasi = 5;
             var b2 = document.getElementById('aralik-bitis');
             if (b1) b1.value = '';
             if (b2) b2.value = '';
+
+            var kayitliKonum = sessionStorage.getItem('koltuk-scroll-' + <?= (int)$etkinlik_id ?>);
+            if (kayitliKonum !== null) {
+                window.scrollTo(0, parseInt(kayitliKonum, 10));
+                sessionStorage.removeItem('koltuk-scroll-' + <?= (int)$etkinlik_id ?>);
+            }
         });
 
-        ['aralik-baslangic', 'aralik-bitis'].forEach(function (id) {
-            document.getElementById(id).addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    araligiSec();
-                }
+        var topluForm = document.getElementById('toplu-form');
+        if (topluForm) {
+            topluForm.addEventListener('submit', function () {
+                sessionStorage.setItem('koltuk-scroll-' + <?= (int)$etkinlik_id ?>, window.scrollY);
             });
+        }
+
+        document.getElementById('aralik-baslangic').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('aralik-bitis').focus();
+            }
+        });
+
+        document.getElementById('aralik-bitis').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
         });
     </script>
 

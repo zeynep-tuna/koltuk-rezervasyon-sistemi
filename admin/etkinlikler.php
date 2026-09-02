@@ -1,4 +1,5 @@
 <?php
+require '../includes/admin-auth-kontrol.php';
 require '../includes/db.php';
 
 // Zamanlanmış yayın tarihi gelmiş ama hala Gizli olan etkinlikleri otomatik Aktif yap

@@ -1,3 +1,4 @@
+<?php require '../includes/admin-auth-kontrol.php'; ?>
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -17,6 +18,10 @@
             <div class="admin-content">
                 <h1>Kontrol Paneli</h1>
                 <p class="dashboard-alt-baslik">Hoş geldin, aşağıdaki bölümlerden birini seçerek başlayabilirsin.</p>
+
+                <?php if (isset($_GET['yetki_yok'])): ?>
+                    <p class="yetki-uyarisi">Bu sayfaya erişim yetkin yok. Admin hesaplarını sadece ana admin yönetebilir.</p>
+                <?php endif; ?>
 
                 <div class="dashboard-kartlar">
                     <a href="etkinlikler.php" class="dashboard-kart">
@@ -42,6 +47,14 @@
                         <h2>Rezervasyonlar</h2>
                         <p>Yapılan rezervasyonları görüntüle.</p>
                     </a>
+
+                    <?php if (!empty($_SESSION['admin_ana_admin'])): ?>
+                        <a href="adminler.php" class="dashboard-kart">
+                            <div class="kart-ikon kart-ikon-mor">🔑</div>
+                            <h2>Adminler</h2>
+                            <p>Panele giriş yapabilecek admin hesaplarını yönet.</p>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

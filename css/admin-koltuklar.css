@@ -100,6 +100,50 @@
     background-color: #FFDAB9;
 }
 
+.baslik-satiri {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.doluluk-kapsul {
+    display: inline-flex;
+    gap: 4px;
+    background-color: #F7F7F5;
+    border-radius: 999px;
+    padding: 4px;
+    flex-wrap: wrap;
+}
+
+.doluluk-rozet {
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.doluluk-rozet-toplam {
+    background-color: #556B65;
+    color: #fff;
+    border-color: #556B65;
+}
+
+.doluluk-rozet-bos {
+    color: #43A047;
+}
+
+.doluluk-rozet-dolu {
+    color: #757575;
+}
+
+.doluluk-rozet-protokol {
+    color: #c9995f;
+}
+
 .ust-kartlar-satiri {
     display: flex;
     gap: 16px;

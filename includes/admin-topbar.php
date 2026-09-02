@@ -1,3 +1,8 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <header class="admin-topbar">
     <form class="admin-arama" method="GET" action="#">
         <svg class="admin-arama-ikon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8,7 +13,7 @@
     </form>
 
     <details class="admin-menu">
-        <summary class="admin-menu-buton">Admin</summary>
+        <summary class="admin-menu-buton"><?= htmlspecialchars($_SESSION['admin_kullanici_adi'] ?? 'Admin') ?></summary>
         <div class="admin-menu-icerik">
             <a href="sifre-degistir.php">Şifre Değiştir</a>
             <a href="cikis.php">Çıkış Yap</a>
