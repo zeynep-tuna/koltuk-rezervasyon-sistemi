@@ -80,7 +80,13 @@ if (isset($_GET['silindi']) && isset($_GET['isim'])) {
     $basari_tur = 'silindi';
 }
 
-$stmt = $pdo->query("SELECT id, kullanici_adi, olusturma_tarihi, ana_admin FROM adminler WHERE deleted = 0 ORDER BY id ASC");
+$arama = trim($_GET['q'] ?? '');
+if ($arama !== '') {
+    $stmt = $pdo->prepare("SELECT id, kullanici_adi, olusturma_tarihi, ana_admin FROM adminler WHERE deleted = 0 AND kullanici_adi LIKE :arama ORDER BY id ASC");
+    $stmt->execute(['arama' => '%' . $arama . '%']);
+} else {
+    $stmt = $pdo->query("SELECT id, kullanici_adi, olusturma_tarihi, ana_admin FROM adminler WHERE deleted = 0 ORDER BY id ASC");
+}
 $adminler = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>

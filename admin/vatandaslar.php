@@ -107,7 +107,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vatandas_duzenle'])) 
 list($ekle_gun, $ekle_ay, $ekle_yil) = ($ekle_modal_ac && isset($_POST['dogum_tarihi'])) ? tarih_parcala($_POST['dogum_tarihi']) : ['', '', ''];
 list($duzenle_gun, $duzenle_ay, $duzenle_yil) = ($duzenle_modal_ac && isset($_POST['dogum_tarihi'])) ? tarih_parcala($_POST['dogum_tarihi']) : ['', '', ''];
 
-$stmt = $pdo->query("SELECT id, tc_no, ad, soyad, dogum_tarihi, telefon FROM vatandaslar WHERE deleted = 0 ORDER BY id ASC");
+$arama = trim($_GET['q'] ?? '');
+if ($arama !== '') {
+    $stmt = $pdo->prepare("SELECT id, tc_no, ad, soyad, dogum_tarihi, telefon FROM vatandaslar WHERE deleted = 0 AND (tc_no LIKE :arama OR ad LIKE :arama OR soyad LIKE :arama OR telefon LIKE :arama) ORDER BY id ASC");
+    $stmt->execute(['arama' => '%' . $arama . '%']);
+} else {
+    $stmt = $pdo->query("SELECT id, tc_no, ad, soyad, dogum_tarihi, telefon FROM vatandaslar WHERE deleted = 0 ORDER BY id ASC");
+}
 $vatandaslar = $stmt->fetchAll();
 
 $aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];

@@ -2,7 +2,13 @@
 require '../includes/admin-auth-kontrol.php';
 require '../includes/db.php';
 
-$stmt = $pdo->query("SELECT id, ad, yer, koltuk_sayisi FROM etkinlikler WHERE deleted = 0 ORDER BY id ASC");
+$arama = trim($_GET['q'] ?? '');
+if ($arama !== '') {
+    $stmt = $pdo->prepare("SELECT id, ad, yer, koltuk_sayisi FROM etkinlikler WHERE deleted = 0 AND (ad LIKE :arama OR yer LIKE :arama) ORDER BY id ASC");
+    $stmt->execute(['arama' => '%' . $arama . '%']);
+} else {
+    $stmt = $pdo->query("SELECT id, ad, yer, koltuk_sayisi FROM etkinlikler WHERE deleted = 0 ORDER BY id ASC");
+}
 $etkinlikler = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>

@@ -199,14 +199,21 @@ list($duzenle_yayin_gun, $duzenle_yayin_ay, $duzenle_yayin_yil) = ($duzenle_moda
 list($duzenle_yayin_saat_h, $duzenle_yayin_dakika) = ($duzenle_modal_ac && isset($_POST['yayin_saat'])) ? saat_parcala($_POST['yayin_saat']) : ['', ''];
 
 $durum_filtre = $_GET['durum'] ?? 'tumu';
+$arama = trim($_GET['q'] ?? '');
 $sql = "SELECT id, ad, yer, etkinlik_tarih, etkinlik_saat, koltuk_sayisi, aciklama, aktif_mi, yayin_tarihi, koridor_sonrasi FROM etkinlikler WHERE deleted = 0";
+$parametreler = [];
 if ($durum_filtre === 'aktif') {
     $sql .= " AND aktif_mi = 1";
 } elseif ($durum_filtre === 'gizli') {
     $sql .= " AND aktif_mi = 0";
 }
+if ($arama !== '') {
+    $sql .= " AND (ad LIKE :arama OR yer LIKE :arama)";
+    $parametreler['arama'] = '%' . $arama . '%';
+}
 $sql .= " ORDER BY id ASC";
-$stmt = $pdo->query($sql);
+$stmt = $pdo->prepare($sql);
+$stmt->execute($parametreler);
 $etkinlikler = $stmt->fetchAll();
 
 function tarih_formatla($tarih, $aylar) {
