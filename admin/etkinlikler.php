@@ -37,7 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['etkinlik_ekle'])) {
         $ekle_modal_ac = true;
     } else {
         $yayin_tarihi = ($yayin_tarih_giris !== '' && $yayin_saat_giris !== '') ? $yayin_tarih_giris . ' ' . $yayin_saat_giris . ':00' : null;
-        $stmt = $pdo->prepare("INSERT INTO etkinlikler (ad, yer, etkinlik_tarih, etkinlik_saat, koltuk_sayisi, aciklama, aktif_mi, yayin_tarihi) VALUES (:ad, :yer, :etkinlik_tarih, :etkinlik_saat, :koltuk_sayisi, :aciklama, :aktif_mi, :yayin_tarihi)");
+        $koridor_giris = preg_replace('/[^0-9,]/', '', trim($_POST['koridor_sonrasi'] ?? ''));
+        $koridor_giris = trim($koridor_giris, ',');
+        $stmt = $pdo->prepare("INSERT INTO etkinlikler (ad, yer, etkinlik_tarih, etkinlik_saat, koltuk_sayisi, aciklama, aktif_mi, yayin_tarihi, satir_basi_koltuk, koridor_sonrasi) VALUES (:ad, :yer, :etkinlik_tarih, :etkinlik_saat, :koltuk_sayisi, :aciklama, :aktif_mi, :yayin_tarihi, :satir_basi_koltuk, :koridor_sonrasi)");
         $stmt->execute([
             'ad' => $ad,
             'yer' => $yer,
@@ -47,6 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['etkinlik_ekle'])) {
             'aciklama' => $aciklama !== '' ? $aciklama : null,
             'aktif_mi' => $aktif_mi,
             'yayin_tarihi' => $yayin_tarihi,
+            'satir_basi_koltuk' => $satir_basi_giris !== '' ? (int)$satir_basi_giris : null,
+            'koridor_sonrasi' => $koridor_giris !== '' ? $koridor_giris : null,
         ]);
 
         $yeni_etkinlik_id = $pdo->lastInsertId();
@@ -105,8 +109,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['etkinlik_duzenle'])) 
         $duzenle_modal_ac = true;
     } else {
         $yayin_tarihi = ($yayin_tarih_giris !== '' && $yayin_saat_giris !== '') ? $yayin_tarih_giris . ' ' . $yayin_saat_giris . ':00' : null;
+        $koridor_giris = preg_replace('/[^0-9,]/', '', trim($_POST['koridor_sonrasi'] ?? ''));
+        $koridor_giris = trim($koridor_giris, ',');
 
-        $stmt = $pdo->prepare("UPDATE etkinlikler SET ad = :ad, yer = :yer, etkinlik_tarih = :etkinlik_tarih, etkinlik_saat = :etkinlik_saat, koltuk_sayisi = :koltuk_sayisi, aciklama = :aciklama, aktif_mi = :aktif_mi, yayin_tarihi = :yayin_tarihi WHERE id = :id");
+        $stmt = $pdo->prepare("UPDATE etkinlikler SET ad = :ad, yer = :yer, etkinlik_tarih = :etkinlik_tarih, etkinlik_saat = :etkinlik_saat, koltuk_sayisi = :koltuk_sayisi, aciklama = :aciklama, aktif_mi = :aktif_mi, yayin_tarihi = :yayin_tarihi, koridor_sonrasi = :koridor_sonrasi WHERE id = :id");
         $stmt->execute([
             'ad' => $ad,
             'yer' => $yer,
@@ -116,6 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['etkinlik_duzenle'])) 
             'aciklama' => $aciklama !== '' ? $aciklama : null,
             'aktif_mi' => $aktif_mi,
             'yayin_tarihi' => $yayin_tarihi,
+            'koridor_sonrasi' => $koridor_giris !== '' ? $koridor_giris : null,
             'id' => $id,
         ]);
         header('Location: etkinlikler.php');
@@ -192,7 +199,7 @@ list($duzenle_yayin_gun, $duzenle_yayin_ay, $duzenle_yayin_yil) = ($duzenle_moda
 list($duzenle_yayin_saat_h, $duzenle_yayin_dakika) = ($duzenle_modal_ac && isset($_POST['yayin_saat'])) ? saat_parcala($_POST['yayin_saat']) : ['', ''];
 
 $durum_filtre = $_GET['durum'] ?? 'tumu';
-$sql = "SELECT id, ad, yer, etkinlik_tarih, etkinlik_saat, koltuk_sayisi, aciklama, aktif_mi, yayin_tarihi FROM etkinlikler WHERE deleted = 0";
+$sql = "SELECT id, ad, yer, etkinlik_tarih, etkinlik_saat, koltuk_sayisi, aciklama, aktif_mi, yayin_tarihi, koridor_sonrasi FROM etkinlikler WHERE deleted = 0";
 if ($durum_filtre === 'aktif') {
     $sql .= " AND aktif_mi = 1";
 } elseif ($durum_filtre === 'gizli') {
@@ -291,7 +298,7 @@ function saat_formatla($saat) {
                                     <td><?= $etkinlik['aktif_mi'] ? '<span class="durum-rozet durum-aktif">Aktif</span>' : '<span class="durum-rozet durum-gizli">Gizli</span>' ?></td>
                                     <td><?= yayin_tarihi_formatla($etkinlik['yayin_tarihi'], $aylar) ?></td>
                                     <td class="islemler">
-                                        <button type="button" class="btn-duzenle" onclick="duzenleAc(<?= (int)$etkinlik['id'] ?>, '<?= htmlspecialchars(addslashes($etkinlik['ad'])) ?>', '<?= htmlspecialchars(addslashes($etkinlik['yer'])) ?>', '<?= $etkinlik['etkinlik_tarih'] ?? '' ?>', '<?= $etkinlik['etkinlik_saat'] ? substr($etkinlik['etkinlik_saat'], 0, 5) : '' ?>', '<?= $etkinlik['koltuk_sayisi'] ?? '' ?>', '<?= htmlspecialchars(js_guvenli($etkinlik['aciklama'] ?? '')) ?>', <?= (int)$etkinlik['aktif_mi'] ?>, '<?= $etkinlik['yayin_tarihi'] ?? '' ?>')">Düzenle</button>
+                                        <button type="button" class="btn-duzenle" onclick="duzenleAc(<?= (int)$etkinlik['id'] ?>, '<?= htmlspecialchars(addslashes($etkinlik['ad'])) ?>', '<?= htmlspecialchars(addslashes($etkinlik['yer'])) ?>', '<?= $etkinlik['etkinlik_tarih'] ?? '' ?>', '<?= $etkinlik['etkinlik_saat'] ? substr($etkinlik['etkinlik_saat'], 0, 5) : '' ?>', '<?= $etkinlik['koltuk_sayisi'] ?? '' ?>', '<?= htmlspecialchars(js_guvenli($etkinlik['aciklama'] ?? '')) ?>', <?= (int)$etkinlik['aktif_mi'] ?>, '<?= $etkinlik['yayin_tarihi'] ?? '' ?>', '<?= $etkinlik['koridor_sonrasi'] ?? '' ?>')">Düzenle</button>
                                         <button type="button" class="btn-sil" onclick="silOnayAc(<?= (int)$etkinlik['id'] ?>)">Sil</button>
                                     </td>
                                 </tr>
@@ -360,6 +367,10 @@ function saat_formatla($saat) {
                 </div>
             </div>
             <p class="yardim-notu">Kaydettiğin anda koltuklar bu bilgilere göre otomatik oluşturulur.</p>
+
+            <label for="ekle-koridor">Koridor Kaçıncı Koltuktan Sonra Olsun?</label>
+            <input type="text" id="ekle-koridor" name="koridor_sonrasi" placeholder="Örn: 3,7" autocomplete="off" value="<?= $ekle_modal_ac ? htmlspecialchars($_POST['koridor_sonrasi'] ?? '') : '' ?>">
+            <p class="yardim-notu">Boş bırakırsan koridor otomatik ortaya konur. Birden fazla koridor için virgülle ayır (örn: 3,7).</p>
 
             <label for="ekle-aciklama">Açıklama</label>
             <textarea id="ekle-aciklama" name="aciklama" rows="3"><?= $ekle_modal_ac ? htmlspecialchars($_POST['aciklama'] ?? '') : '' ?></textarea>
@@ -452,6 +463,10 @@ function saat_formatla($saat) {
             <label for="duzenle-koltuk">Koltuk Sayısı <span class="zorunlu-yildiz" id="duzenle-koltuk-yildiz">*</span></label>
             <input type="number" id="duzenle-koltuk" name="koltuk_sayisi" min="1" autocomplete="off" value="<?= $duzenle_modal_ac ? htmlspecialchars($_POST['koltuk_sayisi'] ?? '') : '' ?>">
             <p class="hata-mesaj-inline" id="duzenle-koltuk-hata" style="display:none">Bu alan zorunludur.</p>
+
+            <label for="duzenle-koridor">Koridor Kaçıncı Koltuktan Sonra Olsun?</label>
+            <input type="text" id="duzenle-koridor" name="koridor_sonrasi" placeholder="Örn: 3,7" autocomplete="off" value="<?= $duzenle_modal_ac ? htmlspecialchars($_POST['koridor_sonrasi'] ?? '') : '' ?>">
+            <p class="yardim-notu">Boş bırakırsan koridor otomatik ortaya konur. Birden fazla koridor için virgülle ayır (örn: 3,7).</p>
 
             <label for="duzenle-aciklama">Açıklama</label>
             <textarea id="duzenle-aciklama" name="aciklama" rows="3"><?= $duzenle_modal_ac ? htmlspecialchars($_POST['aciklama'] ?? '') : '' ?></textarea>
@@ -773,7 +788,8 @@ function saat_formatla($saat) {
         aySecimBagla('ekle-yayin-tarih');
         aySecimBagla('duzenle-yayin-tarih');
 
-        function duzenleAc(id, ad, yer, tarih, saat, koltukSayisi, aciklama, aktifMi, yayinTarihi) {
+        function duzenleAc(id, ad, yer, tarih, saat, koltukSayisi, aciklama, aktifMi, yayinTarihi, koridorSonrasi) {
+            document.getElementById('duzenle-koridor').value = koridorSonrasi || '';
             document.getElementById('duzenle-id').value = id;
             document.getElementById('duzenle-ad').value = ad;
             document.getElementById('duzenle-yer').value = yer;

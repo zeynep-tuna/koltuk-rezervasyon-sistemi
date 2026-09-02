@@ -1,0 +1,3 @@
+ALTER TABLE etkinlikler
+ADD COLUMN satir_basi_koltuk INT NULL DEFAULT NULL,
+ADD COLUMN koridor_sonrasi INT NULL DEFAULT NULL;

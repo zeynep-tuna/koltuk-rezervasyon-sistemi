@@ -1,0 +1,2 @@
+ALTER TABLE etkinlikler
+MODIFY COLUMN koridor_sonrasi VARCHAR(50) NULL DEFAULT NULL;

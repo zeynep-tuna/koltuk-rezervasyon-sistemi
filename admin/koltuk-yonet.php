@@ -9,7 +9,7 @@ if (!ctype_digit((string)$etkinlik_id)) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT id, ad, yer, koltuk_sayisi FROM etkinlikler WHERE id = :id AND deleted = 0");
+$stmt = $pdo->prepare("SELECT id, ad, yer, koltuk_sayisi, koridor_sonrasi, satir_basi_koltuk FROM etkinlikler WHERE id = :id AND deleted = 0");
 $stmt->execute(['id' => $etkinlik_id]);
 $etkinlik = $stmt->fetch();
 
@@ -46,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['koltuk_olustur'])) {
             $satir_index++;
         }
     }
+
+    $satir_basi_guncelle = $pdo->prepare("UPDATE etkinlikler SET satir_basi_koltuk = :satir_basi WHERE id = :id");
+    $satir_basi_guncelle->execute(['satir_basi' => $satir_basi_koltuk, 'id' => $etkinlik_id]);
 
     header('Location: koltuk-yonet.php?etkinlik_id=' . $etkinlik_id);
     exit;
@@ -103,7 +106,15 @@ foreach ($koltuklar_ham as $k) {
     }
 }
 $toplam_koltuk = count($koltuklar_ham);
-$koridor_sonrasi = 5;
+if (!empty($etkinlik['koridor_sonrasi']) || $etkinlik['koridor_sonrasi'] === '0') {
+    $koridor_pozisyonlari = array_filter(array_map('intval', explode(',', $etkinlik['koridor_sonrasi'])), function ($v) {
+        return $v >= 0;
+    });
+} elseif ($etkinlik['satir_basi_koltuk'] !== null && (int)$etkinlik['satir_basi_koltuk'] > 1) {
+    $koridor_pozisyonlari = [(int)floor((int)$etkinlik['satir_basi_koltuk'] / 2)];
+} else {
+    $koridor_pozisyonlari = [5];
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -179,22 +190,39 @@ $koridor_sonrasi = 5;
                         <div class="sinema-sahne">SAHNE / EKRAN</div>
 
                         <div class="sinema-govde">
-                            <?php $genel_sira = 0; foreach ($satirlar as $harf => $satir_koltuklari): ?>
+                            <?php
+                            $genel_sira = 0;
+                            $satir_sayaci = 0;
+                            $toplam_satir_sayisi = count($satirlar);
+                            $orta_satir_index = (int)floor(($toplam_satir_sayisi - 1) / 2);
+                            $mevcut_yukseklik = $toplam_satir_sayisi * 46;
+                            $koridor_yazi_boyutu = max(7, min(16, (int)floor($mevcut_yukseklik / (7 * 1.3))));
+                            $koridor_dikey_kaydirma = ($toplam_satir_sayisi % 2 === 0) ? 23 : 0;
+                            foreach ($satirlar as $harf => $satir_koltuklari): ?>
+                                <?php $bu_satir_ortada_mi = ($satir_sayaci === $orta_satir_index); ?>
                                 <div class="sinema-satir">
                                     <span class="satir-etiket-duz"><?= htmlspecialchars($harf) ?></span>
                                     <div class="satir-koltuklar" data-satir="satir-<?= $harf ?>">
+                                        <?php $satir_uzunlugu = count($satir_koltuklari); ?>
+                                        <?php if (in_array(0, $koridor_pozisyonlari)): ?>
+                                            <div class="koridor-bosluk <?= $bu_satir_ortada_mi ? 'koridor-bosluk-etiketli' : '' ?>"><?php if ($bu_satir_ortada_mi): ?><span style="font-size: <?= $koridor_yazi_boyutu ?>px; margin-top: <?= $koridor_dikey_kaydirma ?>px;">KORİDOR</span><?php endif; ?></div>
+                                        <?php endif; ?>
                                         <?php foreach ($satir_koltuklari as $index => $koltuk): ?>
-                                            <?php if ($index > 0 && $index === $koridor_sonrasi): ?>
-                                                <div class="koridor-bosluk"></div>
+                                            <?php if ($index > 0 && in_array($index, $koridor_pozisyonlari)): ?>
+                                                <div class="koridor-bosluk <?= $bu_satir_ortada_mi ? 'koridor-bosluk-etiketli' : '' ?>"><?php if ($bu_satir_ortada_mi): ?><span style="font-size: <?= $koridor_yazi_boyutu ?>px; margin-top: <?= $koridor_dikey_kaydirma ?>px;">KORİDOR</span><?php endif; ?></div>
                                             <?php endif; ?>
                                             <label class="koltuk-kutu koltuk-<?= $koltuk['durum'] ?>" title="<?= htmlspecialchars($koltuk['koltuk_no']) ?>">
                                                 <input type="checkbox" name="secili_koltuklar[]" value="<?= $koltuk['id'] ?>" class="koltuk-checkbox satir-<?= $harf ?>" data-sira="<?= $genel_sira++ ?>" data-harf="<?= $harf ?>" data-kod="<?= htmlspecialchars($koltuk['koltuk_no']) ?>">
                                                 <span><?= $koltuk['numara'] ?></span>
                                             </label>
                                         <?php endforeach; ?>
+                                        <?php if (in_array($satir_uzunlugu, $koridor_pozisyonlari)): ?>
+                                            <div class="koridor-bosluk <?= $bu_satir_ortada_mi ? 'koridor-bosluk-etiketli' : '' ?>"><?php if ($bu_satir_ortada_mi): ?><span style="font-size: <?= $koridor_yazi_boyutu ?>px; margin-top: <?= $koridor_dikey_kaydirma ?>px;">KORİDOR</span><?php endif; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <span class="satir-etiket-duz"><?= htmlspecialchars($harf) ?></span>
                                 </div>
+                                <?php $satir_sayaci++; ?>
                             <?php endforeach; ?>
                         </div>
                         </div>
