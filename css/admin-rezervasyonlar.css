@@ -1,0 +1,367 @@
+/* admin-rezervasyonlar.css - SADECE admin/rezervasyonlar.php sayfasına ait stiller */
+
+.dashboard-alt-baslik {
+    color: #777;
+    margin-top: -6px;
+    margin-bottom: 26px;
+    font-size: 14px;
+}
+
+.rez-baslik-satiri {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.rez-baslik-satiri h1 {
+    margin: 0;
+}
+
+.ozel-secici-sarmalayici {
+    position: relative;
+}
+
+.ozel-secici-buton {
+    border: 1px solid #ddd;
+    background-color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    padding: 9px 16px;
+    border-radius: 999px;
+}
+
+.ozel-secici-buton:hover {
+    background-color: #F7F7F5;
+}
+
+.ozel-secici-liste {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 30;
+    min-width: 220px;
+}
+
+.ozel-secici-madde {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #333;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.ozel-secici-madde:hover {
+    background-color: #F7F7F5;
+}
+
+.ozel-secici-madde-secili {
+    background-color: #556B65;
+    color: #fff;
+}
+
+.admin-tablo {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.admin-tablo th,
+.admin-tablo td {
+    padding: 12px 14px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.admin-tablo th {
+    background-color: #dde1de;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #4a4a4a;
+}
+
+.bos-satir {
+    text-align: center;
+    color: #888;
+    padding: 30px 0;
+}
+
+.rezervasyon-etkinlik-tarih {
+    display: block;
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+}
+
+.koltuk-etiketi {
+    background-color: #EDEDED;
+    color: #444;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: bold;
+}
+
+.protokol-etiketi {
+    background-color: #FFDAB9;
+    color: #556B65;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 4px;
+}
+
+.tc-yok {
+    color: #ccc;
+}
+
+.rez-filtre-grubu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.giris-filtre-satiri {
+    display: flex;
+    gap: 6px;
+}
+
+.giris-filtre-sekme {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background-color: #EDEDED;
+    color: #555;
+    font-size: 12px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.giris-filtre-sekme:hover {
+    background-color: #ddd;
+}
+
+.giris-filtre-aktif {
+    background-color: #556B65;
+    color: #fff;
+}
+
+.satir-giris-yapildi {
+    background-color: #dcefdd;
+}
+
+.admin-tablo tbody tr {
+    height: 54px;
+}
+
+.islemler {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.giris-kutu {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1.5px solid #ccc;
+    background-color: #fff;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.giris-kutu:hover {
+    border-color: #556B65;
+}
+
+.giris-kutu-isaretli {
+    background-color: #43A047;
+    border-color: #43A047;
+}
+
+.btn-qr {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background-color: #fff;
+    color: #556B65;
+    flex-shrink: 0;
+}
+
+.btn-qr:hover {
+    background-color: #f5f5f5;
+}
+
+.qr-kod-alani {
+    display: flex;
+    justify-content: center;
+    margin: 14px 0;
+}
+
+.qr-referans-etiket {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 0 0 4px 0;
+}
+
+.qr-referans-kodu {
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #333;
+    text-align: center;
+    margin: 0 0 6px 0;
+    font-family: monospace;
+}
+
+.islemler .btn-sil {
+    text-decoration: none;
+    font-size: 13px;
+    font-family: inherit;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: none;
+    display: inline-block;
+    cursor: pointer;
+    background-color: #c62828;
+    color: #fff;
+}
+
+.islemler .btn-sil:hover {
+    background-color: #a02020;
+}
+
+/* Toast bildirimi */
+.toast-bildirim {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background-color: #2e7d32;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    animation: toast-giris 0.3s ease;
+}
+
+.toast-bildirim.toast-kayboluyor {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+@keyframes toast-giris {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Iptal onay penceresi */
+.modal {
+    border: none;
+    border-radius: 12px;
+    padding: 28px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-kucuk {
+    max-width: 380px;
+}
+
+.modal-ortali {
+    text-align: center;
+}
+
+.modal-ortali h2 {
+    margin-bottom: 10px;
+    margin-top: 0;
+}
+
+.uyari-ikon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #fdecea;
+    color: #c62828;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.onay-mesaji {
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.modal-butonlar {
+    display: flex;
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.btn-vazgec {
+    padding: 10px 18px;
+    background-color: #d8d8d8;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.btn-vazgec:hover {
+    background-color: #c8c8c8;
+}
+
+.btn-sil-onayla {
+    padding: 10px 18px;
+    background-color: #c62828;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    flex: 1;
+}
+
+.btn-sil-onayla:hover {
+    background-color: #a02020;
+}

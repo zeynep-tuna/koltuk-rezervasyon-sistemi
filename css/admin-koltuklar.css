@@ -193,6 +193,21 @@
     text-transform: uppercase;
 }
 
+.protokol-adi-input {
+    width: 160px;
+    text-transform: none;
+    text-align: left;
+}
+
+.toplu-hata-mesaji {
+    background-color: #fdecea;
+    color: #c62828;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    margin-bottom: 16px;
+}
+
 .aralik-ok {
     color: #999;
     font-size: 14px;
@@ -355,4 +370,82 @@
 .koltuk-protokol {
     background-color: #FFDAB9;
     color: #556B65;
+}
+
+/* Protokol adi sorma penceresi */
+.modal {
+    border: none;
+    border-radius: 12px;
+    padding: 26px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal h2 {
+    margin: 0 0 6px 0;
+    color: #1F1F1F;
+    font-size: 17px;
+}
+
+.modal-aciklama {
+    font-size: 13px;
+    color: #777;
+    margin: 0 0 14px 0;
+}
+
+.modal input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.hata-mesaj-inline {
+    color: #c62828;
+    font-size: 12px;
+    margin: 6px 0 0 0;
+}
+
+.modal-butonlar {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-vazgec {
+    flex: 1;
+    padding: 10px 16px;
+    background-color: #EDEDED;
+    color: #444;
+    border: none;
+    border-radius: 6px;
+    font-size: 13.5px;
+    cursor: pointer;
+}
+
+.btn-vazgec:hover {
+    background-color: #ddd;
+}
+
+.modal .btn-kaydet {
+    flex: 1;
+    padding: 10px 16px;
+    background-color: #FFDAB9;
+    color: #556B65;
+    border: none;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal .btn-kaydet:hover {
+    background-color: #ffc99c;
 }

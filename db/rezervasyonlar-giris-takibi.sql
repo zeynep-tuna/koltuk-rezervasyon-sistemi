@@ -1,0 +1,3 @@
+ALTER TABLE rezervasyonlar
+ADD COLUMN giris_yapildi_mi TINYINT(1) NOT NULL DEFAULT 0,
+ADD COLUMN giris_zamani DATETIME NULL DEFAULT NULL;
