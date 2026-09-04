@@ -35,10 +35,13 @@ $stmt = $pdo->prepare("SELECT id, ad, soyad, dogum_tarihi FROM vatandaslar WHERE
 $stmt->execute(['tc_no' => $tc_no]);
 $vatandas = $stmt->fetch();
 
-if (!$vatandas || $vatandas['dogum_tarihi'] !== $dogum_tarihi) {
-    // Guvenlik: "TC var ama tarih yanlis" ile "TC hic yok" ayni mesaji donuyor,
-    // boylece biri deneme-yanilmayla bir TC'nin sistemde olup olmadigini anlayamaz.
+if (!$vatandas) {
     echo json_encode(['durum' => 'bulunamadi']);
+    exit;
+}
+
+if ($vatandas['dogum_tarihi'] !== $dogum_tarihi) {
+    echo json_encode(['durum' => 'eslesmiyor']);
     exit;
 }
 

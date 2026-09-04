@@ -361,6 +361,16 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                             document.getElementById('adim1-devam-btn').style.display = 'block';
                         } else if (veri.durum === 'gecersiz_tc') {
                             gosterDurumMesaji('Girdiğin TC kimlik numarası geçersiz. Lütfen kontrol et.');
+                        } else if (veri.durum === 'eslesmiyor') {
+                            gosterDurumMesaji('Bilgilerde bir yanlışlık var. Lütfen TC kimlik numaranı ve doğum tarihini kontrol et.');
+                            document.getElementById('tc_no').value = '';
+                            document.getElementById('dogum-gun').value = '';
+                            document.getElementById('dogum-ay').value = '';
+                            document.getElementById('dogum-yil').value = '';
+                            document.getElementById('dogum-gun-buton').textContent = 'Gün';
+                            document.getElementById('dogum-ay-buton').textContent = 'Ay';
+                            document.getElementById('dogum-yil-buton').textContent = 'Yıl';
+                            document.getElementById('dogum_tarihi').value = '';
                         } else if (veri.durum === 'bulunamadi') {
                             gosterDurumMesaji('TC kimlik numarası veya doğum tarihi hatalı. Bilgilerini kontrol et.');
                             document.getElementById('yeni-kayit-alani').style.display = 'block';
