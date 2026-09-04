@@ -275,7 +275,7 @@ function telefon_formatla($tel) {
             <p class="hata-mesaj-inline" id="ekle-dogum-hata" style="display:none">Bu alan zorunludur.</p>
 
             <label for="ekle-telefon">Telefon</label>
-            <input type="text" id="ekle-telefon" name="telefon" inputmode="numeric" autocomplete="off" placeholder="(555) 555 55 55" oninput="telefonMaskele(this)" value="<?= $ekle_modal_ac ? htmlspecialchars($_POST['telefon'] ?? '') : '' ?>">
+            <input type="text" id="ekle-telefon" name="telefon" inputmode="numeric" autocomplete="off" placeholder="(555) 555 55 55" oninput="telefonMaskele(this)" onkeydown="telefonBackspaceYakala(event)" value="<?= $ekle_modal_ac ? htmlspecialchars($_POST['telefon'] ?? '') : '' ?>">
 
             <div class="modal-butonlar">
                 <button type="button" class="btn-vazgec" onclick="document.getElementById('ekle-modal').close()">Vazgeç</button>
@@ -325,7 +325,7 @@ function telefon_formatla($tel) {
             <p class="hata-mesaj-inline" id="duzenle-dogum-hata" style="display:none">Bu alan zorunludur.</p>
 
             <label for="duzenle-telefon">Telefon</label>
-            <input type="text" id="duzenle-telefon" name="telefon" inputmode="numeric" autocomplete="off" placeholder="(555) 555 55 55" oninput="telefonMaskele(this)" value="<?= $duzenle_modal_ac ? htmlspecialchars($_POST['telefon'] ?? '') : '' ?>">
+            <input type="text" id="duzenle-telefon" name="telefon" inputmode="numeric" autocomplete="off" placeholder="(555) 555 55 55" oninput="telefonMaskele(this)" onkeydown="telefonBackspaceYakala(event)" value="<?= $duzenle_modal_ac ? htmlspecialchars($_POST['telefon'] ?? '') : '' ?>">
 
             <div class="modal-butonlar">
                 <button type="button" class="btn-vazgec" onclick="document.getElementById('duzenle-modal').close()">Vazgeç</button>
@@ -536,8 +536,8 @@ function telefon_formatla($tel) {
         aySecimBagla('duzenle');
 
 
-        function telefonMaskele(input) {
-            var d = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+        function telefonMaskeleRakamdan(input, d) {
+            d = d.slice(0, 10);
             var sonuc = '';
             if (d.length > 0) {
                 sonuc = '(' + d.substring(0, 3);
@@ -554,6 +554,21 @@ function telefon_formatla($tel) {
             }
             input.value = sonuc;
             input.setSelectionRange(sonuc.length, sonuc.length);
+        }
+
+        function telefonMaskele(input) {
+            var d = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+            telefonMaskeleRakamdan(input, d);
+        }
+
+        function telefonBackspaceYakala(e) {
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                var input = e.target;
+                var d = input.value.replace(/[^0-9]/g, '');
+                d = d.slice(0, -1);
+                telefonMaskeleRakamdan(input, d);
+            }
         }
 
 

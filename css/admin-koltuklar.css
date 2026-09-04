@@ -333,13 +333,36 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 12px 12px 5px 5px;
     font-size: 12px;
     font-weight: bold;
     color: #fff;
     cursor: pointer;
     position: relative;
     transition: transform 0.1s ease, box-shadow 0.1s ease;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.35));
+    background-size: calc(100% - 12px) 9px;
+    background-position: center 4px;
+    background-repeat: no-repeat;
+}
+
+.koltuk-kutu::before,
+.koltuk-kutu::after {
+    content: "";
+    position: absolute;
+    top: 11px;
+    width: 6px;
+    height: 17px;
+    background-color: inherit;
+    border-radius: 4px;
+}
+
+.koltuk-kutu::before {
+    left: -4px;
+}
+
+.koltuk-kutu::after {
+    right: -4px;
 }
 
 .koltuk-kutu:hover {
