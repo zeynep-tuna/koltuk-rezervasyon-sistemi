@@ -49,157 +49,211 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
 </head>
 <body>
 
-    <div class="rez-ust-serit">
-        <div class="rez-ust-serit-isik"></div>
-        <div class="rez-ust-icerik">
-            <div class="rez-ust-logo">🎭</div>
-            <div>
-                <div class="rez-ust-baslik">Belediye Etkinlik Rezervasyonu</div>
-                <div class="rez-ust-alt-baslik">Ücretsiz etkinlik biletlerinizi buradan alabilirsiniz</div>
-            </div>
+    <div class="rez-toast" id="rez-toast"></div>
+
+
+    <nav class="top-navbar">
+        <div class="brand">
+            <h1>Belediye Etkinlik Rezervasyonu</h1>
+            <span>Ücretsiz etkinlik biletlerinizi buradan alabilirsiniz</span>
         </div>
-    </div>
+        <div class="stepper">
+            <div class="step step-aktif" id="stepper-1" onclick="stepperTiklandi(1)"><span class="step-num" id="stepper-nokta-1">1</span> Kişi Bilgileri</div>
+            <div class="step" id="stepper-2" onclick="stepperTiklandi(2)"><span class="step-num" id="stepper-nokta-2">2</span> Etkinlik</div>
+            <div class="step" id="stepper-3" onclick="stepperTiklandi(3)"><span class="step-num" id="stepper-nokta-3">3</span> Koltuk</div>
+            <div class="step" id="stepper-4" onclick="stepperTiklandi(4)"><span class="step-num" id="stepper-nokta-4">4</span> Onay</div>
+        </div>
+    </nav>
 
-    <div class="rez-sayfa">
-        <div class="rez-kart">
+    <div class="main-workspace">
 
-            <div class="rez-ilerleme">
-                <div class="rez-adim-grubu">
-                    <div class="rez-adim-nokta rez-adim-aktif" id="nokta-1">1</div>
-                    <span class="rez-adim-etiket rez-adim-etiket-aktif" id="etiket-1">Kişi Bilgileri</span>
+        <!-- SIDEBAR - Adim 1 -->
+        <aside class="sidebar-info" id="sidebar-1">
+            <div>
+                <span class="info-tag">ETKİNLİK PORTALI</span>
+                <h2 class="info-title">Kültür ve Sanatla Buluşuyoruz</h2>
+                <p class="info-desc">Belediyemizin tüm tiyatro, konser ve kültür etkinlikleri vatandaşlarımıza ücretsiz olarak sunulmaktadır.</p>
+                <div class="policy-box">
+                    <div class="policy-title">KULLANIM KURALLARI</div>
+                    <ul class="policy-list">
+                        <li>TC kimlik doğrulaması ile güvenli giriş yapılır.</li>
+                        <li>Aynı etkinlikte en fazla 4 koltuk seçebilirsiniz.</li>
+                        <li>Her koltuk için kendine özel bir QR kod oluşturulur.</li>
+                    </ul>
                 </div>
-                <div class="rez-adim-cizgi" id="cizgi-1"></div>
-                <div class="rez-adim-grubu">
-                    <div class="rez-adim-nokta" id="nokta-2">2</div>
-                    <span class="rez-adim-etiket" id="etiket-2">Etkinlik</span>
+            </div>
+        </aside>
+
+        <!-- SIDEBAR - Adim 2 -->
+        <aside class="sidebar-info" id="sidebar-2" style="display:none">
+            <div>
+                <span class="info-tag">REZERVASYON SAHİBİ</span>
+                <h2 class="info-title" id="sidebar-isim-2"></h2>
+                <div class="policy-box">
+                    <div class="policy-title">KOLTUK SEÇİM BİLGİSİ</div>
+                    <p class="info-desc" style="margin-bottom:0">Listeden etkinliğinizi seçtikten sonra, salon krokisi üzerinden en fazla 4 koltuk seçebilirsiniz.</p>
                 </div>
-                <div class="rez-adim-cizgi" id="cizgi-2"></div>
-                <div class="rez-adim-grubu">
-                    <div class="rez-adim-nokta" id="nokta-3">3</div>
-                    <span class="rez-adim-etiket" id="etiket-3">Koltuk</span>
+            </div>
+        </aside>
+
+        <!-- SIDEBAR - Adim 3 -->
+        <aside class="sidebar-summary" id="sidebar-3" style="display:none">
+            <div>
+                <span class="info-tag" id="sidebar-etkinlik-tag">ETKİNLİK</span>
+                <h2 class="event-heading" id="sidebar-etkinlik-adi"></h2>
+                <p class="event-venue" id="sidebar-etkinlik-yer"></p>
+
+                <div class="summary-card">
+                    <div class="summary-card-title">Rezervasyon Sahibi</div>
+                    <div class="summary-isim" id="sidebar-isim-3"></div>
                 </div>
-                <div class="rez-adim-cizgi" id="cizgi-3"></div>
-                <div class="rez-adim-grubu">
-                    <div class="rez-adim-nokta" id="nokta-4">4</div>
-                    <span class="rez-adim-etiket" id="etiket-4">Onay</span>
+
+                <div class="summary-card">
+                    <div class="summary-card-title">Seçilen Koltuklar (Maks. 4)</div>
+                    <div class="rez-secili-koltuklar" id="secili-koltuklar-ozet" style="display:none">
+                        <span class="rez-secili-liste" id="secili-koltuklar-liste"></span>
+                    </div>
+                    <p class="rez-bos-mesaj" id="secili-koltuklar-bos-mesaj">Henüz koltuk seçmediniz.</p>
                 </div>
             </div>
 
-            <div class="rez-icerik-alani">
+            <div>
+                <button type="button" class="btn-devam" id="adim3-devam-btn" disabled onclick="adimGit(4)">Devam Et</button>
+            </div>
+        </aside>
 
-                <!-- ADIM 1: Kisi Bilgileri -->
-                <div class="rez-adim-icerik" id="adim-1-icerik">
-                    <h2>Kimlik Doğrulama</h2>
-                    <p class="rez-aciklama">Rezervasyon yapmak için TC kimlik numaranı ve doğum tarihini gir.</p>
+        <!-- SIDEBAR - Adim 4 -->
+        <aside class="sidebar-summary" id="sidebar-4" style="display:none">
+            <div>
+                <span class="info-tag">ONAY</span>
+                <h2 class="event-heading">Rezervasyon Özeti</h2>
+                <p class="info-desc">Rezervasyon onay ve QR kod ekranı yakında burada olacak.</p>
+            </div>
+        </aside>
 
-                    <label for="tc_no">TC Kimlik Numarası <span class="zorunlu-yildiz">*</span></label>
-                    <input type="text" id="tc_no" maxlength="11" inputmode="numeric" placeholder="11 haneli TC kimlik numaran" autocomplete="off">
-                    <p class="hata-mesaj-inline" id="tc-format-hata" style="display:none">Geçersiz TC kimlik numarası.</p>
+        <main class="content-area">
+
+            <!-- ADIM 1: Kisi Bilgileri -->
+            <div class="content-box" id="adim-1-icerik">
+                <h2 class="form-header-title">Kimlik Doğrulama</h2>
+                <p class="form-header-sub">Rezervasyon yapmak için TC kimlik numaranı ve doğum tarihini gir.</p>
+
+                <label for="tc_no">TC Kimlik Numarası <span class="zorunlu-yildiz">*</span></label>
+                <input type="text" id="tc_no" maxlength="11" inputmode="numeric" placeholder="11 haneli TC kimlik numaran" autocomplete="off">
+                <p class="hata-mesaj-inline" id="tc-format-hata" style="display:none">Geçersiz TC kimlik numarası.</p>
+
+                <label>Doğum Tarihi <span class="zorunlu-yildiz">*</span></label>
+                <div class="dogum-tarihi-grubu">
+                    <?= ozel_secici_render('dogum-gun', 'Gün', $gun_secenekleri) ?>
+                    <?= ozel_secici_render('dogum-ay', 'Ay', $ay_secenekleri) ?>
+                    <?= ozel_secici_render('dogum-yil', 'Yıl', $yil_secenekleri) ?>
+                </div>
+                <input type="hidden" id="dogum_tarihi">
+
+                <div class="rez-ad-soyad-goster" id="ad-soyad-goster" style="display:none">
+                    <span class="rez-onay-ikon">✓</span>
+                    <div>
+                        <div class="rez-ad-soyad-etiket">Kimlik doğrulandı</div>
+                        <div class="rez-ad-soyad-deger" id="ad-soyad-deger"></div>
+                    </div>
+                </div>
+
+                <div class="rez-yeni-kayit" id="yeni-kayit-alani" style="display:none">
+                    <p class="rez-kayit-aciklama">Yeni kayıt için bilgilerini gir.</p>
+
+                    <label for="yeni_tc">TC Kimlik Numarası <span class="zorunlu-yildiz">*</span></label>
+                    <input type="text" id="yeni_tc" maxlength="11" inputmode="numeric" placeholder="11 haneli TC kimlik numaran" autocomplete="off">
+                    <p class="hata-mesaj-inline" id="yeni-tc-format-hata" style="display:none">Geçersiz TC kimlik numarası.</p>
 
                     <label>Doğum Tarihi <span class="zorunlu-yildiz">*</span></label>
                     <div class="dogum-tarihi-grubu">
-                        <?= ozel_secici_render('dogum-gun', 'Gün', $gun_secenekleri) ?>
-                        <?= ozel_secici_render('dogum-ay', 'Ay', $ay_secenekleri) ?>
-                        <?= ozel_secici_render('dogum-yil', 'Yıl', $yil_secenekleri) ?>
-                    </div>
-                    <input type="hidden" id="dogum_tarihi">
-
-                    <p class="rez-durum-mesaji" id="kimlik-durum-mesaji" style="display:none"></p>
-
-                    <div class="rez-ad-soyad-goster" id="ad-soyad-goster" style="display:none">
-                        <span class="rez-onay-ikon">✓</span>
-                        <div>
-                            <div class="rez-ad-soyad-etiket">Kimlik doğrulandı</div>
-                            <div class="rez-ad-soyad-deger" id="ad-soyad-deger"></div>
-                        </div>
+                        <?= ozel_secici_render('yeni-dogum-gun', 'Gün', $gun_secenekleri) ?>
+                        <?= ozel_secici_render('yeni-dogum-ay', 'Ay', $ay_secenekleri) ?>
+                        <?= ozel_secici_render('yeni-dogum-yil', 'Yıl', $yil_secenekleri) ?>
                     </div>
 
-                    <div class="rez-yeni-kayit" id="yeni-kayit-alani" style="display:none">
-                        <p class="rez-kayit-aciklama">Yeni kayıt için bilgilerini gir.</p>
+                    <label for="yeni_ad">Ad <span class="zorunlu-yildiz">*</span></label>
+                    <input type="text" id="yeni_ad" autocomplete="off">
 
-                        <label for="yeni_tc">TC Kimlik Numarası <span class="zorunlu-yildiz">*</span></label>
-                        <input type="text" id="yeni_tc" maxlength="11" inputmode="numeric" placeholder="11 haneli TC kimlik numaran" autocomplete="off">
-                        <p class="hata-mesaj-inline" id="yeni-tc-format-hata" style="display:none">Geçersiz TC kimlik numarası.</p>
+                    <label for="yeni_soyad">Soyad <span class="zorunlu-yildiz">*</span></label>
+                    <input type="text" id="yeni_soyad" autocomplete="off">
 
-                        <label>Doğum Tarihi <span class="zorunlu-yildiz">*</span></label>
-                        <div class="dogum-tarihi-grubu">
-                            <?= ozel_secici_render('yeni-dogum-gun', 'Gün', $gun_secenekleri) ?>
-                            <?= ozel_secici_render('yeni-dogum-ay', 'Ay', $ay_secenekleri) ?>
-                            <?= ozel_secici_render('yeni-dogum-yil', 'Yıl', $yil_secenekleri) ?>
-                        </div>
+                    <label for="yeni_telefon">Telefon <span class="zorunlu-yildiz">*</span></label>
+                    <input type="text" id="yeni_telefon" inputmode="numeric" placeholder="(555) 555 55 55" autocomplete="off" oninput="telefonMaskele(this)" onkeydown="telefonBackspaceYakala(event)">
 
-                        <label for="yeni_ad">Ad <span class="zorunlu-yildiz">*</span></label>
-                        <input type="text" id="yeni_ad" autocomplete="off">
+                    <p class="hata-mesaj-genel" id="kayit-hata-mesaji" style="display:none"></p>
 
-                        <label for="yeni_soyad">Soyad <span class="zorunlu-yildiz">*</span></label>
-                        <input type="text" id="yeni_soyad" autocomplete="off">
-
-                        <label for="yeni_telefon">Telefon <span class="zorunlu-yildiz">*</span></label>
-                        <input type="text" id="yeni_telefon" inputmode="numeric" placeholder="(555) 555 55 55" autocomplete="off" oninput="telefonMaskele(this)" onkeydown="telefonBackspaceYakala(event)">
-
-                        <p class="hata-mesaj-genel" id="kayit-hata-mesaji" style="display:none"></p>
-
-                        <button type="button" class="btn-devam" onclick="kaydiTamamla()">Kaydımı Tamamla</button>
-                    </div>
-
-                    <button type="button" class="btn-devam" id="adim1-devam-btn" style="display:none" onclick="adimGit(2)">Devam Et</button>
+                    <button type="button" class="btn-devam" onclick="kaydiTamamla()">Kaydımı Tamamla</button>
                 </div>
 
-                <!-- ADIM 2: Etkinlik Secimi -->
-                <div class="rez-adim-icerik" id="adim-2-icerik" style="display:none">
-                    <h2>Etkinlik Seç</h2>
-                    <p class="rez-aciklama">Katılmak istediğin etkinliği seç.</p>
-
-                    <div class="rez-etkinlik-listesi" id="etkinlik-listesi">
-                        <?php if (count($etkinlikler) === 0): ?>
-                            <p class="rez-bos-mesaj">Şu anda rezervasyona açık bir etkinlik yok.</p>
-                        <?php endif; ?>
-                        <?php foreach ($etkinlikler as $e): ?>
-                            <div class="rez-etkinlik-karti <?= $e['kalan_koltuk'] === 0 ? 'rez-etkinlik-karti-dolu' : '' ?>" data-etkinlik-id="<?= $e['id'] ?>" data-etkinlik-ad="<?= htmlspecialchars($e['ad']) ?>" data-etkinlik-yer="<?= htmlspecialchars($e['yer']) ?>" data-etkinlik-tarih="<?= $e['etkinlik_tarih'] ? date('d.m.Y', strtotime($e['etkinlik_tarih'])) : '' ?>" data-etkinlik-saat="<?= $e['etkinlik_saat'] ? substr($e['etkinlik_saat'], 0, 5) : '' ?>" data-kalan-koltuk="<?= $e['kalan_koltuk'] ?>" onclick="etkinlikSec(this)">
-                                <div class="rez-etkinlik-poster">🎭</div>
-                                <div class="rez-etkinlik-bilgi-metin">
-                                    <div class="rez-etkinlik-adi"><?= htmlspecialchars($e['ad']) ?></div>
-                                    <div class="rez-etkinlik-detay">
-                                        <?= htmlspecialchars($e['yer']) ?>
-                                        <?php if ($e['etkinlik_tarih']): ?>
-                                            · <?= date('d.m.Y', strtotime($e['etkinlik_tarih'])) ?> <?= $e['etkinlik_saat'] ? substr($e['etkinlik_saat'], 0, 5) : '' ?>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="rez-koltuk-rozeti <?= $e['kalan_koltuk'] === 0 ? 'rez-koltuk-rozeti-dolu' : '' ?>">
-                                        <?= $e['kalan_koltuk'] > 0 ? $e['kalan_koltuk'] . ' koltuk kaldı' : 'Koltuk kalmadı' ?>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-sec" <?= $e['kalan_koltuk'] === 0 ? 'disabled' : '' ?>>Seç</button>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <button type="button" class="rez-geri-link" onclick="adimGit(1)">← Geri dön</button>
-                </div>
-
-                <!-- ADIM 3: Koltuk Secimi (yer tutucu) -->
-                <div class="rez-adim-icerik" id="adim-3-icerik" style="display:none">
-                    <h2>Koltuk Seç</h2>
-                    <div class="rez-yakinda-kutu">
-                        <p>Koltuk seçim ekranı yakında burada olacak. 🎬</p>
-                    </div>
-                    <button type="button" class="rez-geri-link" onclick="adimGit(2)">← Geri dön</button>
-                </div>
-
-                <!-- ADIM 4: Onay (yer tutucu) -->
-                <div class="rez-adim-icerik" id="adim-4-icerik" style="display:none">
-                    <h2>Onay</h2>
-                    <div class="rez-yakinda-kutu">
-                        <p>Rezervasyon onay ve QR kod ekranı yakında burada olacak. 🎟️</p>
-                    </div>
-                </div>
-
+                <button type="button" class="btn-devam" id="adim1-devam-btn" style="display:none" onclick="adimGit(2)">Devam Et</button>
             </div>
-        </div>
+
+            <!-- ADIM 2: Etkinlik Secimi -->
+            <div class="content-box" id="adim-2-icerik" style="display:none">
+                <button type="button" class="rez-geri-link" onclick="adimGit(1)">← Geri dön</button>
+                <h2 class="form-header-title">Etkinlik Seç</h2>
+                <p class="form-header-sub">Katılmak istediğin etkinliği seç.</p>
+
+
+                <div class="rez-etkinlik-listesi" id="etkinlik-listesi">
+                    <?php if (count($etkinlikler) === 0): ?>
+                        <p class="rez-bos-mesaj">Şu anda rezervasyona açık bir etkinlik yok.</p>
+                    <?php endif; ?>
+                    <?php foreach ($etkinlikler as $e): ?>
+                        <div class="rez-etkinlik-karti <?= $e['kalan_koltuk'] === 0 ? 'rez-etkinlik-karti-dolu' : '' ?>" data-etkinlik-id="<?= $e['id'] ?>" data-etkinlik-ad="<?= htmlspecialchars($e['ad']) ?>" data-etkinlik-yer="<?= htmlspecialchars($e['yer']) ?>" data-etkinlik-tarih="<?= $e['etkinlik_tarih'] ? date('d.m.Y', strtotime($e['etkinlik_tarih'])) : '' ?>" data-etkinlik-saat="<?= $e['etkinlik_saat'] ? substr($e['etkinlik_saat'], 0, 5) : '' ?>" data-kalan-koltuk="<?= $e['kalan_koltuk'] ?>" onclick="etkinlikSec(this)">
+                            <div class="rez-etkinlik-poster">🎭</div>
+                            <div class="rez-etkinlik-bilgi-metin">
+                                <div class="rez-etkinlik-adi"><?= htmlspecialchars($e['ad']) ?></div>
+                                <div class="rez-etkinlik-detay">
+                                    <?= htmlspecialchars($e['yer']) ?>
+                                    <?php if ($e['etkinlik_tarih']): ?>
+                                        · <?= date('d.m.Y', strtotime($e['etkinlik_tarih'])) ?> <?= $e['etkinlik_saat'] ? substr($e['etkinlik_saat'], 0, 5) : '' ?>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="rez-koltuk-rozeti <?= $e['kalan_koltuk'] === 0 ? 'rez-koltuk-rozeti-dolu' : '' ?>">
+                                    <?= $e['kalan_koltuk'] > 0 ? $e['kalan_koltuk'] . ' koltuk kaldı' : 'Koltuk kalmadı' ?>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-sec" <?= $e['kalan_koltuk'] === 0 ? 'disabled' : '' ?>>Seç</button>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- ADIM 3: Koltuk Secimi -->
+            <div class="adim3-govde" id="adim-3-icerik" style="display:none">
+                <button type="button" class="rez-geri-link" onclick="adimGit(2)">← Geri dön</button>
+                <div class="control-bar">
+                    <div class="rez-koltuk-lejant">
+                        <span><span class="rez-lejant-nokta rez-lejant-bos"></span> Müsait</span>
+                        <span><span class="rez-lejant-nokta rez-lejant-secili"></span> Seçili</span>
+                        <span><span class="rez-lejant-nokta rez-lejant-dolu"></span> Dolu</span>
+                    </div>
+                    <div class="control-bar-not">En fazla 4 koltuk seçebilirsin.</div>
+                </div>
+                <div class="auditorium-container">
+                    <div class="rez-sahne">SAHNE</div>
+                    <div class="rez-koltuk-harita" id="koltuk-harita">
+                        <p class="rez-bos-mesaj">Yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADIM 4: Onay (yer tutucu) -->
+            <div class="content-box" id="adim-4-icerik" style="display:none">
+                <h2 class="form-header-title">Onay</h2>
+                <div class="rez-yakinda-kutu">
+                    <p>Rezervasyon onay ve QR kod ekranı yakında burada olacak. 🎟️</p>
+                </div>
+            </div>
+
+        </main>
     </div>
 
     <script>
         var mevcutAdim = 1;
+        var enYuksekUlasilanAdim = 1;
 
         function telefonMaskeleRakamdan(input, d) {
             d = d.slice(0, 10);
@@ -238,33 +292,58 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         });
         var secilenEtkinlik = null;
         var tcTimer = null;
+        var dogrulananIsim = '';
 
-        function adimGit(hedefAdim) {
+        function adimGit(hedefAdim, gecmiseEkle) {
+            if (hedefAdim > enYuksekUlasilanAdim) {
+                enYuksekUlasilanAdim = hedefAdim;
+            }
+
+            if (gecmiseEkle !== false) {
+                history.pushState({ adim: hedefAdim }, '', '#adim-' + hedefAdim);
+            }
+
             for (var i = 1; i <= 4; i++) {
-                document.getElementById('adim-' + i + '-icerik').style.display = (i === hedefAdim) ? 'block' : 'none';
-                var nokta = document.getElementById('nokta-' + i);
-                var etiket = document.getElementById('etiket-' + i);
-                nokta.classList.remove('rez-adim-aktif', 'rez-adim-tamamlandi');
-                etiket.classList.remove('rez-adim-etiket-aktif');
+                document.getElementById('adim-' + i + '-icerik').style.display = (i === hedefAdim) ? (i === 3 ? 'flex' : 'block') : 'none';
+                document.getElementById('sidebar-' + i).style.display = (i === hedefAdim) ? 'flex' : 'none';
+
+                var stepEl = document.getElementById('stepper-' + i);
+                var noktaEl = document.getElementById('stepper-nokta-' + i);
+                stepEl.classList.remove('step-aktif', 'step-tamamlandi');
+                stepEl.classList.toggle('step-tiklanabilir', i <= enYuksekUlasilanAdim && i !== hedefAdim);
 
                 if (i < hedefAdim) {
-                    nokta.classList.add('rez-adim-tamamlandi');
-                    nokta.innerHTML = '✓';
+                    stepEl.classList.add('step-tamamlandi');
+                    noktaEl.innerHTML = '✓';
                 } else if (i === hedefAdim) {
-                    nokta.classList.add('rez-adim-aktif');
-                    etiket.classList.add('rez-adim-etiket-aktif');
-                    nokta.textContent = i;
+                    stepEl.classList.add('step-aktif');
+                    noktaEl.textContent = i;
                 } else {
-                    nokta.textContent = i;
-                }
-
-                if (i < 4) {
-                    var cizgi = document.getElementById('cizgi-' + i);
-                    cizgi.classList.toggle('rez-cizgi-tamamlandi', i < hedefAdim);
+                    noktaEl.textContent = i;
                 }
             }
             mevcutAdim = hedefAdim;
+
+            if (hedefAdim === 2 || hedefAdim === 3) {
+                document.getElementById('sidebar-isim-2').textContent = dogrulananIsim;
+                document.getElementById('sidebar-isim-3').textContent = dogrulananIsim;
+            }
         }
+
+        function stepperTiklandi(hedefAdim) {
+            if (hedefAdim <= enYuksekUlasilanAdim) {
+                adimGit(hedefAdim);
+            }
+        }
+
+        window.addEventListener('popstate', function (e) {
+            var adim = (e.state && e.state.adim) ? e.state.adim : 1;
+            if (adim <= enYuksekUlasilanAdim) {
+                adimGit(adim, false);
+            }
+        });
+
+        history.replaceState({ adim: 1 }, '', '#adim-1');
 
         function tcAlgoritmaGecerliMi(tc) {
             if (!/^[0-9]{11}$/.test(tc)) return false;
@@ -356,7 +435,8 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                     .then(function (yanit) { return yanit.json(); })
                     .then(function (veri) {
                         if (veri.durum === 'bulundu') {
-                            document.getElementById('ad-soyad-deger').textContent = veri.ad + ' ' + veri.soyad;
+                            dogrulananIsim = veri.ad + ' ' + veri.soyad;
+                            document.getElementById('ad-soyad-deger').textContent = dogrulananIsim;
                             document.getElementById('ad-soyad-goster').style.display = 'flex';
                             document.getElementById('adim1-devam-btn').style.display = 'block';
                         } else if (veri.durum === 'gecersiz_tc') {
@@ -372,7 +452,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                             document.getElementById('dogum-yil-buton').textContent = 'Yıl';
                             document.getElementById('dogum_tarihi').value = '';
                         } else if (veri.durum === 'bulunamadi') {
-                            gosterDurumMesaji('TC kimlik numarası veya doğum tarihi hatalı. Bilgilerini kontrol et.');
+                            gosterDurumMesaji('Bu bilgilerle bir kayıt bulunamadı. Bilgilerini kontrol edebilir ya da aşağıdan yeni kayıt oluşturabilirsin.');
                             document.getElementById('yeni-kayit-alani').style.display = 'block';
                             document.getElementById('tc_no').value = '';
                             document.getElementById('dogum-gun').value = '';
@@ -390,7 +470,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         function resetKimlikGorunumu() {
             document.getElementById('ad-soyad-goster').style.display = 'none';
             document.getElementById('adim1-devam-btn').style.display = 'none';
-            document.getElementById('kimlik-durum-mesaji').style.display = 'none';
+            document.getElementById('yeni-kayit-alani').style.display = 'none';
             document.getElementById('dogum-gun-buton').classList.remove('input-hata');
             document.getElementById('dogum-ay-buton').classList.remove('input-hata');
             document.getElementById('dogum-yil-buton').classList.remove('input-hata');
@@ -400,13 +480,23 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         }
 
         function gosterDurumMesaji(mesaj) {
-            var kutu = document.getElementById('kimlik-durum-mesaji');
-            kutu.textContent = mesaj;
-            kutu.style.display = 'block';
+            gosterToast(mesaj);
             document.getElementById('tc_no').classList.add('input-hata');
             document.getElementById('dogum-gun-buton').classList.add('input-hata');
             document.getElementById('dogum-ay-buton').classList.add('input-hata');
             document.getElementById('dogum-yil-buton').classList.add('input-hata');
+        }
+
+        var toastZamanlayici = null;
+
+        function gosterToast(mesaj) {
+            var toast = document.getElementById('rez-toast');
+            clearTimeout(toastZamanlayici);
+            toast.textContent = mesaj;
+            toast.classList.add('rez-toast-goster');
+            toastZamanlayici = setTimeout(function () {
+                toast.classList.remove('rez-toast-goster');
+            }, 4000);
         }
 
         document.getElementById('yeni_tc').addEventListener('input', function () {
@@ -473,7 +563,8 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                         return;
                     }
                     hataKutu.style.display = 'none';
-                    document.getElementById('ad-soyad-deger').textContent = veri.ad + ' ' + veri.soyad;
+                    dogrulananIsim = veri.ad + ' ' + veri.soyad;
+                    document.getElementById('ad-soyad-deger').textContent = dogrulananIsim;
                     document.getElementById('yeni-kayit-alani').style.display = 'none';
                     document.getElementById('ad-soyad-goster').style.display = 'flex';
                     document.getElementById('adim1-devam-btn').style.display = 'block';
@@ -491,7 +582,173 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                 tarih: kart.dataset.etkinlikTarih,
                 saat: kart.dataset.etkinlikSaat
             };
+            document.getElementById('sidebar-etkinlik-adi').textContent = secilenEtkinlik.ad;
+            document.getElementById('sidebar-etkinlik-yer').textContent = secilenEtkinlik.yer + (secilenEtkinlik.tarih ? ' · ' + secilenEtkinlik.tarih + ' ' + secilenEtkinlik.saat : '');
+            seciliKoltuklar = [];
             adimGit(3);
+            koltukHaritasiniYukle();
+        }
+
+        var seciliKoltuklar = [];
+        var MAKS_KOLTUK = 4;
+
+        function koltukHaritasiniYukle() {
+            var harita = document.getElementById('koltuk-harita');
+            harita.innerHTML = '<p class="rez-bos-mesaj">Yükleniyor...</p>';
+            document.getElementById('adim3-devam-btn').disabled = true;
+            seciliKoltuklarOzetiGuncelle();
+
+            fetch('koltuk-liste.php?etkinlik_id=' + secilenEtkinlik.id)
+                .then(function (yanit) { return yanit.json(); })
+                .then(function (veri) {
+                    if (veri.hata) {
+                        harita.innerHTML = '<p class="rez-bos-mesaj">Koltuklar yüklenemedi.</p>';
+                        return;
+                    }
+                    koltukHaritasiniCiz(veri);
+                })
+                .catch(function (hata) {
+                    harita.innerHTML = '<p class="rez-bos-mesaj">Bir hata oluştu, konsolu kontrol et.</p>';
+                    console.error('Koltuk haritası yüklenemedi:', hata);
+                });
+        }
+
+        function koltukHaritasiniCiz(veri) {
+            var satirlar = {};
+            veri.koltuklar.forEach(function (k) {
+                var harf = k.koltuk_no.charAt(0);
+                if (!satirlar[harf]) satirlar[harf] = [];
+                satirlar[harf].push(k);
+            });
+
+            var satirBasi = veri.satir_basi_koltuk ? parseInt(veri.satir_basi_koltuk, 10) : null;
+            var koridorPozisyonlari = [];
+            if (veri.koridor_sonrasi !== null && veri.koridor_sonrasi !== '') {
+                koridorPozisyonlari = veri.koridor_sonrasi.split(',').map(Number).filter(function (v) { return v >= 0; });
+            } else if (satirBasi && satirBasi > 1) {
+                koridorPozisyonlari = [Math.floor(satirBasi / 2)];
+            } else {
+                koridorPozisyonlari = [5];
+            }
+
+            var html = '';
+            var enUzunSatir = 0;
+            Object.keys(satirlar).sort().forEach(function (harf) {
+                var satirUzunlugu = satirlar[harf].length;
+                var koridorSayisiBuSatirda = koridorPozisyonlari.filter(function (p) { return p >= 0 && p <= satirUzunlugu; }).length;
+                enUzunSatir = Math.max(enUzunSatir, satirUzunlugu + koridorSayisiBuSatirda);
+
+                html += '<div class="rez-koltuk-satiri">';
+                html += '<span class="rez-satir-etiket">' + harf + '</span>';
+                html += '<div class="rez-satir-koltuklari">';
+
+                if (koridorPozisyonlari.indexOf(0) !== -1) {
+                    html += '<div class="rez-koridor-bosluk"></div>';
+                }
+
+                satirlar[harf].forEach(function (k, index) {
+                    if (index > 0 && koridorPozisyonlari.indexOf(index) !== -1) {
+                        html += '<div class="rez-koridor-bosluk"></div>';
+                    }
+                    var numara = k.koltuk_no.substring(harf.length);
+                    var durumSinif = 'rez-koltuk-bos';
+                    var tiklanamaz = '';
+                    if (k.durum !== 'bos') {
+                        durumSinif = 'rez-koltuk-dolu';
+                        tiklanamaz = 'disabled';
+                    }
+                    html += '<button type="button" class="rez-koltuk-kutu ' + durumSinif + '" data-id="' + k.id + '" data-no="' + k.koltuk_no + '" ' + tiklanamaz + ' onclick="koltukSec(this)"><span>' + numara + '</span></button>';
+                });
+
+                if (koridorPozisyonlari.indexOf(satirUzunlugu) !== -1) {
+                    html += '<div class="rez-koridor-bosluk"></div>';
+                }
+
+                html += '</div>';
+                html += '<span class="rez-satir-etiket">' + harf + '</span>';
+                html += '</div>';
+            });
+
+            document.getElementById('koltuk-harita').innerHTML = html;
+            koltukBoyutunuSigdir(enUzunSatir);
+        }
+
+        function koltukBoyutunuSigdir(sutunSayisi) {
+            var harita = document.getElementById('koltuk-harita');
+            if (sutunSayisi <= 0) return;
+
+            var mevcutGenislik = harita.parentElement.clientWidth - 60;
+            var varsayilanKutu = 34;
+            var varsayilanBosluk = 10;
+            var minimumKutu = 26;
+            var etiketGenisligi = 44;
+
+            var gerekliGenislik = sutunSayisi * (varsayilanKutu + varsayilanBosluk) + etiketGenisligi;
+
+            if (gerekliGenislik > mevcutGenislik) {
+                var oran = (mevcutGenislik - etiketGenisligi) / (sutunSayisi * (varsayilanKutu + varsayilanBosluk));
+                oran = Math.max(oran, minimumKutu / varsayilanKutu);
+                var yeniKutu = Math.max(minimumKutu, Math.floor(varsayilanKutu * oran));
+                var yeniBosluk = Math.max(6, Math.floor(varsayilanBosluk * oran));
+                var yeniYaziBoyutu = Math.max(10, Math.floor(11 * oran));
+
+                harita.style.setProperty('--koltuk-boyutu', yeniKutu + 'px');
+                harita.style.setProperty('--koltuk-boslugu', yeniBosluk + 'px');
+                harita.style.setProperty('--koltuk-yazi-boyutu', yeniYaziBoyutu + 'px');
+
+                var hedefGenislik = sutunSayisi * (yeniKutu + yeniBosluk) + etiketGenisligi;
+                if (hedefGenislik > mevcutGenislik) {
+                    harita.style.overflowX = 'auto';
+                    harita.style.width = '100%';
+                } else {
+                    harita.style.overflowX = '';
+                    harita.style.width = '';
+                }
+            } else {
+                harita.style.removeProperty('--koltuk-boyutu');
+                harita.style.removeProperty('--koltuk-boslugu');
+                harita.style.removeProperty('--koltuk-yazi-boyutu');
+                harita.style.overflowX = '';
+                harita.style.width = '';
+            }
+        }
+
+        function koltukSec(buton) {
+            var id = buton.dataset.id;
+            var no = buton.dataset.no;
+            var index = seciliKoltuklar.findIndex(function (k) { return k.id === id; });
+
+            if (index !== -1) {
+                seciliKoltuklar.splice(index, 1);
+                buton.classList.remove('rez-koltuk-secili');
+            } else {
+                if (seciliKoltuklar.length >= MAKS_KOLTUK) {
+                    gosterToast('En fazla ' + MAKS_KOLTUK + ' koltuk seçebilirsin.');
+                    return;
+                }
+                seciliKoltuklar.push({ id: id, no: no });
+                buton.classList.add('rez-koltuk-secili');
+            }
+            seciliKoltuklarOzetiGuncelle();
+        }
+
+        function seciliKoltuklarOzetiGuncelle() {
+            var ozet = document.getElementById('secili-koltuklar-ozet');
+            var liste = document.getElementById('secili-koltuklar-liste');
+            var bosMesaj = document.getElementById('secili-koltuklar-bos-mesaj');
+            var devamBtn = document.getElementById('adim3-devam-btn');
+
+            if (seciliKoltuklar.length === 0) {
+                ozet.style.display = 'none';
+                bosMesaj.style.display = 'block';
+                devamBtn.disabled = true;
+                return;
+            }
+
+            liste.innerHTML = seciliKoltuklar.map(function (k) { return '<span class="rez-koltuk-etiketi">' + k.no + '</span>'; }).join('');
+            ozet.style.display = 'block';
+            bosMesaj.style.display = 'none';
+            devamBtn.disabled = false;
         }
 
         function etkinlikListesiniTazele() {

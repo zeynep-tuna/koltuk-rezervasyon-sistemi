@@ -113,6 +113,42 @@
     background-color: #45564f;
 }
 
+.koltuk-coklu-secim {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 160px;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+.koltuk-cip {
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    background-color: #fff;
+    color: #444;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.koltuk-cip:hover {
+    background-color: #F7F7F5;
+}
+
+.koltuk-cip-secili {
+    background-color: #556B65;
+    color: #fff;
+    border-color: #556B65;
+}
+
+.rez-bos-mesaj {
+    font-size: 13px;
+    color: #999;
+    margin: 0;
+}
+
 .hata-mesaj-genel {
     background-color: #fdecea;
     color: #c62828;

@@ -14,11 +14,17 @@ $koltuk_hata = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rez_ekle'])) {
     $vatandas_id = $_POST['vatandas_id'] ?? '';
     $etkinlik_id_ekle = $_POST['etkinlik_id_ekle'] ?? '';
-    $koltuk_id_ekle = $_POST['koltuk_id_ekle'] ?? '';
+    $koltuk_id_listesi = $_POST['koltuk_id_ekle'] ?? [];
+    if (!is_array($koltuk_id_listesi)) {
+        $koltuk_id_listesi = [];
+    }
+    $koltuk_id_listesi = array_values(array_filter($koltuk_id_listesi, function ($v) {
+        return ctype_digit((string)$v);
+    }));
 
     $vatandas_hata = !ctype_digit((string)$vatandas_id);
     $etkinlik_hata = !ctype_digit((string)$etkinlik_id_ekle);
-    $koltuk_hata = !ctype_digit((string)$koltuk_id_ekle);
+    $koltuk_hata = count($koltuk_id_listesi) === 0 || count($koltuk_id_listesi) > 4;
 
     if ($vatandas_hata || $etkinlik_hata || $koltuk_hata) {
         $_SESSION['rez_form_hata'] = [
@@ -30,14 +36,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rez_ekle'])) {
         header('Location: rezervasyonlar.php?form_hata=1');
         exit;
     } else {
-        // Koltuk hala bos mu diye son bir kontrol (baskasi ayni anda almis olabilir)
-        $kontrol = $pdo->prepare("SELECT durum FROM koltuklar WHERE id = :id AND etkinlik_id = :etkinlik_id AND deleted = 0");
-        $kontrol->execute(['id' => $koltuk_id_ekle, 'etkinlik_id' => $etkinlik_id_ekle]);
-        $koltuk_satiri = $kontrol->fetch();
+        // Koltuklarin hepsi hala bos mu diye son bir kontrol (baskasi ayni anda almis olabilir)
+        $yer_tutucular = implode(',', array_fill(0, count($koltuk_id_listesi), '?'));
+        $kontrol = $pdo->prepare("SELECT id, durum FROM koltuklar WHERE id IN ($yer_tutucular) AND etkinlik_id = ? AND deleted = 0");
+        $kontrol->execute(array_merge($koltuk_id_listesi, [$etkinlik_id_ekle]));
+        $bulunan_koltuklar = $kontrol->fetchAll();
 
-        if (!$koltuk_satiri || $koltuk_satiri['durum'] !== 'bos') {
+        $hepsi_bos_mu = count($bulunan_koltuklar) === count($koltuk_id_listesi);
+        foreach ($bulunan_koltuklar as $k) {
+            if ($k['durum'] !== 'bos') {
+                $hepsi_bos_mu = false;
+            }
+        }
+
+        if (!$hepsi_bos_mu) {
             $_SESSION['rez_form_hata'] = [
-                'hata' => 'Seçtiğin koltuk artık boş değil, lütfen başka bir koltuk seç.',
+                'hata' => 'Seçtiğin koltuklardan biri artık boş değil, lütfen tekrar seç.',
                 'vatandas_hata' => false,
                 'etkinlik_hata' => false,
                 'koltuk_hata' => true,
@@ -45,35 +59,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rez_ekle'])) {
             header('Location: rezervasyonlar.php?form_hata=1');
             exit;
         } else {
-            $yeni_qr_token = bin2hex(random_bytes(16));
-            $ekle = $pdo->prepare("INSERT INTO rezervasyonlar (vatandas_id, etkinlik_id, koltuk_id, qr_token) VALUES (:vatandas_id, :etkinlik_id, :koltuk_id, :qr_token)");
-            $ekle->execute([
-                'vatandas_id' => $vatandas_id,
-                'etkinlik_id' => $etkinlik_id_ekle,
-                'koltuk_id' => $koltuk_id_ekle,
-                'qr_token' => $yeni_qr_token,
-            ]);
+            $son_qr_token = '';
+            foreach ($koltuk_id_listesi as $koltuk_id) {
+                $yeni_qr_token = bin2hex(random_bytes(16));
+                $son_qr_token = $yeni_qr_token;
+                $ekle = $pdo->prepare("INSERT INTO rezervasyonlar (vatandas_id, etkinlik_id, koltuk_id, qr_token) VALUES (:vatandas_id, :etkinlik_id, :koltuk_id, :qr_token)");
+                $ekle->execute([
+                    'vatandas_id' => $vatandas_id,
+                    'etkinlik_id' => $etkinlik_id_ekle,
+                    'koltuk_id' => $koltuk_id,
+                    'qr_token' => $yeni_qr_token,
+                ]);
 
-            $koltuk_guncelle = $pdo->prepare("UPDATE koltuklar SET durum = 'dolu' WHERE id = :id");
-            $koltuk_guncelle->execute(['id' => $koltuk_id_ekle]);
+                $koltuk_guncelle = $pdo->prepare("UPDATE koltuklar SET durum = 'dolu' WHERE id = :id");
+                $koltuk_guncelle->execute(['id' => $koltuk_id]);
+            }
 
             $vatandas_bilgi = $pdo->prepare("SELECT ad, soyad FROM vatandaslar WHERE id = :id");
             $vatandas_bilgi->execute(['id' => $vatandas_id]);
             $v_satiri = $vatandas_bilgi->fetch();
             $yeni_isim = $v_satiri ? $v_satiri['ad'] . ' ' . $v_satiri['soyad'] : '';
+            $koltuk_sayisi = count($koltuk_id_listesi);
 
-            header('Location: rezervasyonlar.php?' . http_build_query([
+            $yonlendirme = [
                 'rez_eklendi' => 1,
-                'yeni_qr' => $yeni_qr_token,
+                'rez_koltuk_sayisi' => $koltuk_sayisi,
                 'yeni_isim' => $yeni_isim,
-            ]));
+            ];
+            if ($koltuk_sayisi === 1) {
+                $yonlendirme['yeni_qr'] = $son_qr_token;
+            }
+
+            header('Location: rezervasyonlar.php?' . http_build_query($yonlendirme));
             exit;
         }
     }
 }
 
 if (isset($_GET['rez_eklendi'])) {
-    $basari = 'Rezervasyon eklendi.';
+    $eklenen_koltuk_sayisi = (int)($_GET['rez_koltuk_sayisi'] ?? 1);
+    $basari = $eklenen_koltuk_sayisi > 1 ? $eklenen_koltuk_sayisi . ' koltuk için rezervasyon eklendi.' : 'Rezervasyon eklendi.';
 }
 
 if (isset($_GET['form_hata']) && isset($_SESSION['rez_form_hata'])) {
@@ -358,13 +383,14 @@ function url_koru($ekstra = []) {
                 <p class="hata-mesaj-inline">Bir etkinlik seçmelisin.</p>
             <?php endif; ?>
 
-            <label for="koltuk-secimi">Koltuk <span class="zorunlu-yildiz">*</span></label>
-            <select id="koltuk-secimi" name="koltuk_id_ekle" class="<?= $koltuk_hata ? 'input-hata' : '' ?>" disabled>
-                <option value="">Önce vatandaş ve etkinlik seç...</option>
-            </select>
+            <label>Koltuk (en fazla 4) <span class="zorunlu-yildiz">*</span></label>
+            <div class="koltuk-coklu-secim" id="koltuk-coklu-secim">
+                <p class="rez-bos-mesaj">Önce vatandaş ve etkinlik seç...</p>
+            </div>
             <?php if ($koltuk_hata): ?>
-                <p class="hata-mesaj-inline"><?= $hata !== '' && strpos($hata, 'boş değil') !== false ? htmlspecialchars($hata) : 'Bir koltuk seçmelisin.' ?></p>
+                <p class="hata-mesaj-inline"><?= $hata !== '' && strpos($hata, 'boş değil') !== false ? htmlspecialchars($hata) : 'En az bir koltuk seçmelisin.' ?></p>
             <?php endif; ?>
+            <div id="koltuk-id-alanlari"></div>
 
             <input type="hidden" name="rez_ekle" value="1">
 
@@ -381,6 +407,9 @@ function url_koru($ekstra = []) {
             document.getElementById('tc-sonuc-listesi').innerHTML = '';
             vatandasKaldir();
             document.getElementById('ekle-rez-form').reset();
+            seciliKoltukIdleri = [];
+            document.getElementById('koltuk-coklu-secim').innerHTML = '<p class="rez-bos-mesaj">Önce vatandaş ve etkinlik seç...</p>';
+            document.getElementById('koltuk-id-alanlari').innerHTML = '';
 
             document.querySelectorAll('#ekle-rez-modal .hata-mesaj-genel, #ekle-rez-modal .hata-mesaj-inline').forEach(function (el) {
                 el.remove();
@@ -487,42 +516,66 @@ function url_koru($ekstra = []) {
             document.getElementById('tc-arama-kutusu').disabled = false;
             document.getElementById('etkinlik-secimi').disabled = true;
             document.getElementById('etkinlik-secimi').value = '';
-            document.getElementById('koltuk-secimi').innerHTML = '<option value="">Önce vatandaş ve etkinlik seç...</option>';
-            document.getElementById('koltuk-secimi').disabled = true;
+            document.getElementById('koltuk-coklu-secim').innerHTML = '<p class="rez-bos-mesaj">Önce vatandaş ve etkinlik seç...</p>';
             document.getElementById('tc-arama-kutusu').focus();
         }
 
+        var seciliKoltukIdleri = [];
+        var MAKS_KOLTUK_ADMIN = 4;
+
         function etkinlikDegisti() {
             var etkinlikId = document.getElementById('etkinlik-secimi').value;
-            var koltukKutu = document.getElementById('koltuk-secimi');
+            var kutu = document.getElementById('koltuk-coklu-secim');
+            seciliKoltukIdleri = [];
+            koltukIdAlanlariniGuncelle();
 
             if (etkinlikId === '') {
-                koltukKutu.innerHTML = '<option value="">Önce etkinlik seç...</option>';
-                koltukKutu.disabled = true;
+                kutu.innerHTML = '<p class="rez-bos-mesaj">Önce etkinlik seç...</p>';
                 return;
             }
 
-            koltukKutu.innerHTML = '<option value="">Yükleniyor...</option>';
-            koltukKutu.disabled = true;
+            kutu.innerHTML = '<p class="rez-bos-mesaj">Yükleniyor...</p>';
 
             fetch('bos-koltuklar.php?etkinlik_id=' + etkinlikId)
                 .then(function (yanit) { return yanit.json(); })
                 .then(function (koltuklar) {
                     if (koltuklar.length === 0) {
-                        koltukKutu.innerHTML = '<option value="">Boş koltuk yok</option>';
-                        koltukKutu.disabled = true;
+                        kutu.innerHTML = '<p class="rez-bos-mesaj">Boş koltuk yok.</p>';
                         return;
                     }
-                    koltukKutu.innerHTML = '<option value="">Koltuk seç...</option>';
+                    var html = '';
                     koltuklar.forEach(function (k) {
-                        var secenek = document.createElement('option');
-                        secenek.value = k.id;
-                        secenek.textContent = k.koltuk_no;
-                        koltukKutu.appendChild(secenek);
+                        html += '<button type="button" class="koltuk-cip" data-id="' + k.id + '" data-no="' + k.koltuk_no + '" onclick="koltukToggle(this)">' + k.koltuk_no + '</button>';
                     });
-                    koltukKutu.disabled = false;
-                    koltukKutu.focus();
+                    kutu.innerHTML = html;
                 });
+        }
+
+        function koltukToggle(buton) {
+            var id = buton.dataset.id;
+            var index = seciliKoltukIdleri.indexOf(id);
+
+            if (index !== -1) {
+                seciliKoltukIdleri.splice(index, 1);
+                buton.classList.remove('koltuk-cip-secili');
+            } else {
+                if (seciliKoltukIdleri.length >= MAKS_KOLTUK_ADMIN) {
+                    alert('En fazla ' + MAKS_KOLTUK_ADMIN + ' koltuk seçebilirsin.');
+                    return;
+                }
+                seciliKoltukIdleri.push(id);
+                buton.classList.add('koltuk-cip-secili');
+            }
+            koltukIdAlanlariniGuncelle();
+        }
+
+        function koltukIdAlanlariniGuncelle() {
+            var alan = document.getElementById('koltuk-id-alanlari');
+            var html = '';
+            seciliKoltukIdleri.forEach(function (id) {
+                html += '<input type="hidden" name="koltuk_id_ekle[]" value="' + id + '">';
+            });
+            alan.innerHTML = html;
         }
 
         <?php if ($ekle_modal_ac): ?>
