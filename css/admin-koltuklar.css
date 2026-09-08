@@ -379,7 +379,8 @@
 }
 
 .koltuk-kutu:has(input:checked) {
-    box-shadow: 0 0 0 2px #556B65;
+    background-color: #2D5A44 !important;
+    box-shadow: 0 0 0 2px #2D5A44;
 }
 
 .koltuk-bos {
