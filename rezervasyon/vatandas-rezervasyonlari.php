@@ -1,4 +1,7 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 require '../includes/db.php';
 header('Content-Type: application/json');
 
@@ -44,6 +47,16 @@ if ($vatandas['dogum_tarihi'] !== $dogum_tarihi) {
     echo json_encode(['durum' => 'eslesmiyor']);
     exit;
 }
+
+// Basarili kimlik dogrulamasini oturumda tut.
+// Boylece kullanici rezervasyon.php'ye geri dondugunde tekrar bilgi girmek zorunda kalmaz.
+$_SESSION['rezervasyon_kullanici'] = [
+    'id' => (int)$vatandas['id'],
+    'ad' => $vatandas['ad'],
+    'soyad' => $vatandas['soyad'],
+    'tc_no' => $tc_no,
+    'dogum_tarihi' => $dogum_tarihi,
+];
 
 $rez_stmt = $pdo->prepare("
     SELECT r.qr_token, r.giris_yapildi_mi, k.koltuk_no, e.ad AS etkinlik_adi, e.yer, e.etkinlik_tarih, e.etkinlik_saat

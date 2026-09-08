@@ -1,4 +1,19 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// Kimlik bilgileri yalnızca Rezervasyonlarım sayfasından gelen tek seferlik geçişte
+// korunur. Sayfa yenilendiğinde bu izin bulunmadığı için oturum temizlenir.
+$rezervasyonlardanGeldi = ($_GET['rezervasyonlardan'] ?? '') === '1';
+$geriGecisIzni = ($_COOKIE['rezervasyon_geri_izni'] ?? '') === '1';
+
+if (!$rezervasyonlardanGeldi || !$geriGecisIzni) {
+    unset($_SESSION['rezervasyon_kullanici']);
+} else {
+    setcookie('rezervasyon_geri_izni', '', time() - 3600, '/');
+}
+
 require '../includes/db.php';
 
 // Sadece Aktif etkinlikleri listeye koy (Gizli olanlar halka gorunmez)
@@ -80,10 +95,11 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                         <li>TC kimlik doğrulaması ile güvenli giriş yapılır.</li>
                         <li>Aynı etkinlikte en fazla 4 koltuk seçebilirsiniz.</li>
                         <li>Her koltuk için kendine özel bir QR kod oluşturulur.</li>
+                        <li>Rezervasyonunu, etkinlikten en az 3 gün öncesine kadar iptal edebilirsin.</li>
                     </ul>
                 </div>
             </div>
-            <a href="rezervasyonlarim.php" class="rez-sidebar-rezervasyonlarim">🎟️ Rezervasyonlarım</a>
+            <a href="rezervasyonlarim.php?kaynak=etkinlik" class="rez-sidebar-rezervasyonlarim" onclick="rezervasyonlarimaGecisHazirla()">🎟️ Rezervasyonlarım</a>
         </aside>
 
         <!-- SIDEBAR - Adim 2: Koltuk -->
@@ -111,7 +127,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
 
             <div>
                 <button type="button" class="btn-devam" id="adim3-devam-btn" disabled onclick="koltukKontrolEdipDevamEt()">Devam Et</button>
-                <a href="rezervasyonlarim.php" class="rez-sidebar-rezervasyonlarim">🎟️ Rezervasyonlarım</a>
+                <a href="rezervasyonlarim.php?kaynak=akis" class="rez-sidebar-rezervasyonlarim" onclick="rezervasyonlarimaGecisHazirla()">🎟️ Rezervasyonlarım</a>
             </div>
         </aside>
 
@@ -126,7 +142,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                     <p class="info-desc" style="margin-bottom:0">Rezervasyonu tamamlamak için TC kimlik numaranı ve doğum tarihini doğrulaman gerekiyor.</p>
                 </div>
             </div>
-            <a href="rezervasyonlarim.php" class="rez-sidebar-rezervasyonlarim">🎟️ Rezervasyonlarım</a>
+            <a href="rezervasyonlarim.php?kaynak=akis" class="rez-sidebar-rezervasyonlarim" onclick="rezervasyonlarimaGecisHazirla()">🎟️ Rezervasyonlarım</a>
         </aside>
 
         <!-- SIDEBAR - Adim 4 -->
@@ -136,7 +152,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                 <h2 class="event-heading">Rezervasyonun Hazır</h2>
                 <p class="info-desc">QR kodlarını kaydet veya ekran görüntüsü al. Girişte bu kodlar okutulacak.</p>
             </div>
-            <a href="rezervasyonlarim.php" class="rez-sidebar-rezervasyonlarim">🎟️ Rezervasyonlarım</a>
+            <a href="rezervasyonlarim.php?kaynak=akis" class="rez-sidebar-rezervasyonlarim" onclick="rezervasyonlarimaGecisHazirla()">🎟️ Rezervasyonlarım</a>
         </aside>
 
         <main class="content-area">
@@ -246,12 +262,6 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                     <h2 class="form-header-title" style="text-align:center">Rezervasyonun Oluşturuldu</h2>
                     <p class="form-header-sub" style="text-align:center" id="onay-etkinlik-ozeti"></p>
 
-                    <div class="rez-tasarim-secici">
-                        <button type="button" class="rez-tasarim-btn" id="tasarim-btn-1" onclick="tasarimDegistir(1)">Tasarım 1</button>
-                        <button type="button" class="rez-tasarim-btn" id="tasarim-btn-2" onclick="tasarimDegistir(2)">Tasarım 2</button>
-                        <button type="button" class="rez-tasarim-btn" id="tasarim-btn-3" onclick="tasarimDegistir(3)">Tasarım 3</button>
-                        <button type="button" class="rez-tasarim-btn rez-tasarim-btn-aktif" id="tasarim-btn-4" onclick="tasarimDegistir(4)">Tasarım 4</button>
-                    </div>
                     <div class="rez-qr-listesi" id="onay-qr-listesi"></div>
 
                     <p class="rez-onay-not">Bu ekranı kaydet veya ekran görüntüsü al — girişte QR kodların okutulacak. Birden fazla koltuk seçtiysen, her kodu ayrı kişiyle paylaşabilirsin.</p>
@@ -309,6 +319,43 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         var dogrulananVatandasId = null;
         var dogrulananTc = '';
         var dogrulananDogum = '';
+
+        var oturumKullanici = <?= json_encode($_SESSION['rezervasyon_kullanici'] ?? null, JSON_UNESCAPED_UNICODE) ?>;
+        var rezervasyonlardanGeldi = <?= json_encode($rezervasyonlardanGeldi && $geriGecisIzni) ?>;
+
+        function rezervasyonlarimaGecisHazirla() {
+            document.cookie = 'rezervasyon_giris_izni=1; path=/; SameSite=Lax';
+        }
+
+        function rezervasyonKullaniciBilgileriniDoldur() {
+            if (!rezervasyonlardanGeldi || !oturumKullanici || !oturumKullanici.tc_no || !oturumKullanici.dogum_tarihi) {
+                return;
+            }
+
+            dogrulananVatandasId = oturumKullanici.id || null;
+            dogrulananIsim = (oturumKullanici.ad || '') + ' ' + (oturumKullanici.soyad || '');
+            dogrulananTc = oturumKullanici.tc_no;
+            dogrulananDogum = oturumKullanici.dogum_tarihi;
+
+            var tcInput = document.getElementById('tc_no');
+            var dogumInput = document.getElementById('dogum_tarihi');
+            if (tcInput) tcInput.value = dogrulananTc;
+            if (dogumInput) dogumInput.value = dogrulananDogum;
+
+            var parcalar = dogrulananDogum.split('-');
+            if (parcalar.length === 3) {
+                document.getElementById('dogum-gun').value = parcalar[2];
+                document.getElementById('dogum-ay').value = parcalar[1];
+                document.getElementById('dogum-yil').value = parcalar[0];
+                document.getElementById('dogum-gun-buton').textContent = String(parseInt(parcalar[2], 10));
+                document.getElementById('dogum-ay-buton').textContent = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'][parseInt(parcalar[1], 10) - 1];
+                document.getElementById('dogum-yil-buton').textContent = parcalar[0];
+            }
+
+            document.getElementById('ad-soyad-deger').textContent = dogrulananIsim.trim();
+            document.getElementById('ad-soyad-goster').style.display = 'flex';
+            document.getElementById('adim1-devam-btn').style.display = 'block';
+        }
 
         function adimGit(hedefAdim, gecmiseEkle) {
             if (hedefAdim > enYuksekUlasilanAdim) {
@@ -400,11 +447,36 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             });
             var liste = document.getElementById(listeId);
             var acikMiydi = liste.style.display === 'block';
-            liste.style.display = acikMiydi ? 'none' : 'block';
-            if (!acikMiydi) {
-                liste.scrollTop = 0;
+
+            if (acikMiydi) {
+                liste.style.display = 'none';
+                return;
             }
+
+            var buton = document.getElementById(listeId.replace('-liste', '-buton'));
+            if (buton) {
+                if (liste.parentNode !== document.body) {
+                    document.body.appendChild(liste);
+                    liste.classList.add('ozel-secici-liste-tasindi');
+                }
+                var dikdortgen = buton.getBoundingClientRect();
+                liste.style.top = (dikdortgen.bottom + 4) + 'px';
+                liste.style.left = dikdortgen.left + 'px';
+                liste.style.width = dikdortgen.width + 'px';
+            }
+
+            liste.style.display = 'block';
+            liste.scrollTop = 0;
         }
+
+        window.addEventListener('scroll', function (e) {
+            if (e.target && e.target.classList && e.target.classList.contains('ozel-secici-liste')) {
+                return;
+            }
+            document.querySelectorAll('.ozel-secici-liste').forEach(function (el) {
+                el.style.display = 'none';
+            });
+        }, true);
 
         function ozelSeciciSec(madde) {
             var id = madde.dataset.id;
@@ -819,10 +891,28 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                 return;
             }
 
-            liste.innerHTML = seciliKoltuklar.map(function (k) { return '<span class="rez-koltuk-etiketi">' + k.no + '</span>'; }).join('');
+            liste.innerHTML = seciliKoltuklar.map(function (k) {
+                return '<span class="rez-koltuk-etiketi">' + k.no +
+                    '<button type="button" class="rez-koltuk-etiketi-sil" onclick="sidebardanKoltukKaldir(\'' + k.id + '\')" aria-label="Koltuğu kaldır">✕</button>' +
+                    '</span>';
+            }).join('');
             ozet.style.display = 'block';
             bosMesaj.style.display = 'none';
             devamBtn.disabled = false;
+        }
+
+        function sidebardanKoltukKaldir(id) {
+            var index = seciliKoltuklar.findIndex(function (k) { return k.id === id; });
+            if (index === -1) return;
+
+            seciliKoltuklar.splice(index, 1);
+
+            var buton = document.querySelector('.rez-koltuk-kutu[data-id="' + id + '"]');
+            if (buton) {
+                buton.classList.remove('rez-koltuk-secili');
+            }
+
+            seciliKoltuklarOzetiGuncelle();
         }
 
         function rezervasyonuKaydet() {
@@ -889,7 +979,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                 saat: veri.etkinlik_saat
             };
             sonKisiAdi = veri.isim || dogrulananIsim;
-            qrKartlariniCiz(veri.rezervasyonlar, aktifTasarim);
+            qrKartlariniCiz(veri.rezervasyonlar);
         }
 
         var sonEtkinlikBilgisi = {};
@@ -897,33 +987,8 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
 
         var sonKaydedilenRezervasyonlar = [];
 
-        var aktifTasarim = 4;
-
-        function qrSekmeDegistir(buton) {
-            var index = buton.dataset.index;
-            var sekme = buton.dataset.sekme;
-            var kart = buton.closest('.rez-qr-karti-sekmeli');
-
-            kart.querySelectorAll('.rez-qr-sekme').forEach(function (b) {
-                b.classList.remove('rez-qr-sekme-aktif');
-            });
-            buton.classList.add('rez-qr-sekme-aktif');
-
-            document.getElementById('onay-qr-' + index).style.display = (sekme === 'kod') ? 'block' : 'none';
-            document.getElementById('onay-referans-' + index).style.display = (sekme === 'referans') ? 'block' : 'none';
-        }
-
-        function tasarimDegistir(tasarimNo) {
-            aktifTasarim = tasarimNo;
-            document.getElementById('tasarim-btn-1').classList.toggle('rez-tasarim-btn-aktif', tasarimNo === 1);
-            document.getElementById('tasarim-btn-2').classList.toggle('rez-tasarim-btn-aktif', tasarimNo === 2);
-            document.getElementById('tasarim-btn-3').classList.toggle('rez-tasarim-btn-aktif', tasarimNo === 3);
-            document.getElementById('tasarim-btn-4').classList.toggle('rez-tasarim-btn-aktif', tasarimNo === 4);
-            qrKartlariniCiz(sonKaydedilenRezervasyonlar, tasarimNo);
-        }
-
         function qrIndir(buton, koltukNo) {
-            var kart = buton.closest('.rez-qr-karti, .rez-qr-karti-yatay, .rez-qr-karti-sekmeli, .ticket-container');
+            var kart = buton.closest('.ticket-container');
             if (!kart) return;
 
             buton.style.display = 'none';
@@ -940,87 +1005,49 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             });
         }
 
-        function qrKartlariniCiz(rezervasyonlar, tasarimNo) {
+        function qrKartlariniCiz(rezervasyonlar) {
             var kutu = document.getElementById('onay-qr-listesi');
             kutu.innerHTML = '';
-            kutu.className = 'rez-qr-listesi' + (tasarimNo === 2 ? ' rez-qr-listesi-yatay' : '') + (tasarimNo === 4 ? ' rez-qr-listesi-genis' : '');
+            kutu.className = 'rez-qr-listesi rez-qr-listesi-genis';
 
             rezervasyonlar.forEach(function (r, index) {
                 var kart = document.createElement('div');
 
-                if (tasarimNo === 2) {
-                    kart.className = 'rez-qr-karti-yatay';
-                    kart.innerHTML =
-                        '<div class="rez-qr-yatay-etiket">Koltuk ' + r.koltuk_no + '</div>' +
-                        '<div class="rez-qr-yatay-govde">' +
-                        '<div class="rez-qr-kod-alani" id="onay-qr-' + index + '"></div>' +
-                        '<div class="rez-qr-yatay-bilgi">' +
-                        '<div class="rez-qr-referans-etiket">Referans</div>' +
-                        '<div class="rez-qr-referans-kodu">' + r.referans_kodu + '</div>' +
-                        '<button type="button" class="rez-qr-indir-link" onclick="qrIndir(this, \'' + r.koltuk_no + '\')">İndir ⬇</button>' +
-                        '</div>' +
-                        '</div>';
-                } else if (tasarimNo === 3) {
-                    kart.className = 'rez-qr-karti-sekmeli';
-                    kart.innerHTML =
-                        '<div class="rez-qr-karti-ust">Koltuk ' + r.koltuk_no + '</div>' +
-                        '<div class="rez-qr-sekme-satiri">' +
-                        '<button type="button" class="rez-qr-sekme rez-qr-sekme-aktif" data-index="' + index + '" data-sekme="kod" onclick="qrSekmeDegistir(this)">QR Kod</button>' +
-                        '<button type="button" class="rez-qr-sekme" data-index="' + index + '" data-sekme="referans" onclick="qrSekmeDegistir(this)">Referans Kodu</button>' +
-                        '</div>' +
-                        '<div class="rez-qr-sekme-govde">' +
-                        '<div class="rez-qr-kod-alani" id="onay-qr-' + index + '"></div>' +
-                        '<div class="rez-qr-referans-kodu rez-qr-referans-tam" id="onay-referans-' + index + '" style="display:none">' + r.referans_kodu + '</div>' +
-                        '</div>' +
-                        '<button type="button" class="rez-qr-indir-link" onclick="qrIndir(this, \'' + r.koltuk_no + '\')">İndir ⬇</button>';
-                } else if (tasarimNo === 4) {
-                    kart.className = 'ticket-container';
-                    kart.innerHTML =
-                        '<div class="ticket-left">' +
-                        '<div class="ticket-image-wrapper">' +
-                        '<img src="https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=500&q=80" alt="Etkinlik Görseli" class="ticket-image">' +
-                        '</div>' +
-                        '<div class="ticket-info">' +
-                        '<h2 class="event-title">' + sonEtkinlikBilgisi.adi + '</h2>' +
-                        '<div class="info-group">' +
-                        '<span class="info-label">Etkinlik Detayları</span>' +
-                        '<div class="info-row"><span class="row-key">Salon:</span><span class="row-val">' + sonEtkinlikBilgisi.yer + '</span></div>' +
-                        '<div class="info-row"><span class="row-key">Tarih:</span><span class="row-val">' + sonEtkinlikBilgisi.tarih + ' ' + sonEtkinlikBilgisi.saat + '</span></div>' +
-                        '<div class="info-row"><span class="row-key">Koltuk:</span><span class="row-val highlight">' + r.koltuk_no + '</span></div>' +
-                        '</div>' +
-                        '<div class="ticket-owner">' +
-                        '<label class="owner-label">Bilet Sahibi</label>' +
-                        '<div class="owner-box">' + sonKisiAdi + '</div>' +
-                        '</div>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="ticket-divider">' +
-                        '<div class="notch notch-top"></div>' +
-                        '<div class="notch notch-orta"></div>' +
-                        '<div class="dashed-line"></div>' +
-                        '<div class="notch notch-bottom"></div>' +
-                        '</div>' +
-                        '<div class="ticket-right">' +
-                        '<div class="seat-badge">Koltuk ' + r.koltuk_no + '</div>' +
-                        '<div class="qr-wrapper" id="onay-qr-' + index + '"></div>' +
-                        '<div class="ticket-ref-area">' +
-                        '<span class="ref-title">REFERANS KODU</span>' +
-                        '<span class="ref-code">' + r.referans_kodu + '</span>' +
-                        '<button type="button" class="btn-download" onclick="qrIndir(this, \'' + r.koltuk_no + '\')">İndir ⬇</button>' +
-                        '</div>' +
-                        '</div>';
-                } else {
-                    kart.className = 'rez-qr-karti';
-                    kart.innerHTML =
-                        '<div class="rez-qr-karti-ust">Koltuk ' + r.koltuk_no + '</div>' +
-                        '<div class="rez-qr-karti-govde">' +
-                        '<div class="rez-qr-kod-alani" id="onay-qr-' + index + '"></div>' +
-                        '<div class="rez-qr-kesik-cizgi"><span></span><span></span></div>' +
-                        '<div class="rez-qr-referans-etiket">Referans Kodu</div>' +
-                        '<div class="rez-qr-referans-kodu">' + r.referans_kodu + '</div>' +
-                        '<button type="button" class="rez-qr-indir-link" onclick="qrIndir(this, \'' + r.koltuk_no + '\')">İndir ⬇</button>' +
-                        '</div>';
-                }
+                kart.className = 'ticket-container';
+                kart.innerHTML =
+                    '<div class="ticket-left">' +
+                    '<div class="ticket-image-wrapper">' +
+                    '<img src="https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=500&q=80" alt="Etkinlik Görseli" class="ticket-image">' +
+                    '</div>' +
+                    '<div class="ticket-info">' +
+                    '<h2 class="event-title">' + sonEtkinlikBilgisi.adi + '</h2>' +
+                    '<div class="info-group">' +
+                    '<span class="info-label">Etkinlik Detayları</span>' +
+                    '<div class="info-row"><span class="row-key">Salon:</span><span class="row-val">' + sonEtkinlikBilgisi.yer + '</span></div>' +
+                    '<div class="info-row"><span class="row-key">Tarih:</span><span class="row-val">' + sonEtkinlikBilgisi.tarih + ' ' + sonEtkinlikBilgisi.saat + '</span></div>' +
+                    '<div class="info-row"><span class="row-key">Koltuk:</span><span class="row-val highlight">' + r.koltuk_no + '</span></div>' +
+                    '</div>' +
+                    '<div class="ticket-owner">' +
+                    '<label class="owner-label">Bilet Sahibi</label>' +
+                    '<div class="owner-box">' + sonKisiAdi + '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="ticket-divider">' +
+                    '<div class="notch notch-top"></div>' +
+                    '<div class="notch notch-orta"></div>' +
+                    '<div class="dashed-line"></div>' +
+                    '<div class="notch notch-bottom"></div>' +
+                    '</div>' +
+                    '<div class="ticket-right">' +
+                    '<div class="seat-badge">Koltuk ' + r.koltuk_no + '</div>' +
+                    '<div class="qr-wrapper" id="onay-qr-' + index + '"></div>' +
+                    '<div class="ticket-ref-area">' +
+                    '<span class="ref-title">REFERANS KODU</span>' +
+                    '<span class="ref-code">' + r.referans_kodu + '</span>' +
+                    '<button type="button" class="btn-download" onclick="qrIndir(this, \'' + r.koltuk_no + '\')">İndir ⬇</button>' +
+                    '</div>' +
+                    '</div>';
 
                 kutu.appendChild(kart);
 
@@ -1065,6 +1092,14 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         }
 
         setInterval(etkinlikListesiniTazele, 15000);
+
+        // Sadece Rezervasyonlarım -> Geri dön akışında ve yalnızca etkinlik
+        // seçiminden önce gelindiyse bilgileri bir kez doldur.
+        if (rezervasyonlardanGeldi) {
+            rezervasyonKullaniciBilgileriniDoldur();
+            // Tek seferlik geçişi URL'den kaldır; yenilemede tekrar otomatik giriş olmasın.
+            history.replaceState({ adim: 1 }, '', 'rezervasyon.php#adim-1');
+        }
     </script>
 
 </body>

@@ -1,5 +1,95 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// Rezervasyonlarım sadece rezervasyon sayfasındaki butondan gelindiğinde
+// mevcut kimlik oturumunu kullanır. Sayfa yenilenirse geçiş izni olmadığı
+// için kullanıcı tekrar giriş ekranını görür.
+$rezervasyonGirisIzni = ($_COOKIE['rezervasyon_giris_izni'] ?? '') === '1';
+if ($rezervasyonGirisIzni) {
+    setcookie('rezervasyon_giris_izni', '', time() - 3600, '/');
+} else {
+    unset($_SESSION['rezervasyon_kullanici']);
+}
+
 require '../includes/db.php';
+
+// Rezervasyon iptali: sadece oturumda doğrulanmış vatandaş kendi rezervasyonunu iptal edebilir.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['islem'] ?? '') === 'iptal') {
+    header('Content-Type: application/json; charset=utf-8');
+
+    $oturum = $_SESSION['rezervasyon_kullanici'] ?? null;
+    $referans = trim($_POST['referans_kodu'] ?? '');
+
+    if (!$oturum || empty($oturum['id']) || $referans === '') {
+        echo json_encode(['basarili' => false, 'hata' => 'Oturum bilgileri bulunamadı.']);
+        exit;
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("
+            SELECT r.id, r.koltuk_id, r.giris_yapildi_mi, e.etkinlik_tarih
+            FROM rezervasyonlar r
+            JOIN etkinlikler e ON e.id = r.etkinlik_id
+            WHERE r.referans_kodu = :referans
+              AND r.vatandas_id = :vatandas_id
+            LIMIT 1
+        ");
+        $stmt->execute([
+            'referans' => $referans,
+            'vatandas_id' => (int)$oturum['id']
+        ]);
+        $rezervasyon = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$rezervasyon) {
+            $pdo->rollBack();
+            echo json_encode(['basarili' => false, 'hata' => 'Rezervasyon bulunamadı.']);
+            exit;
+        }
+
+        if (!empty($rezervasyon['giris_yapildi_mi'])) {
+            $pdo->rollBack();
+            echo json_encode(['basarili' => false, 'hata' => 'Giriş yapılmış bir rezervasyon iptal edilemez.']);
+            exit;
+        }
+
+        if (!empty($rezervasyon['etkinlik_tarih'])) {
+            $bugun = new DateTime('today');
+            $etkinlikGunu = new DateTime($rezervasyon['etkinlik_tarih']);
+            $kalanGun = (int)$bugun->diff($etkinlikGunu)->format('%r%a');
+
+            if ($kalanGun < 3) {
+                $pdo->rollBack();
+                echo json_encode(['basarili' => false, 'hata' => 'Etkinliğe 3 günden az kaldığı için rezervasyon iptal edilemez.']);
+                exit;
+            }
+        }
+
+        $deletedKontrol = $pdo->query("SHOW COLUMNS FROM rezervasyonlar LIKE 'deleted'")->fetch(PDO::FETCH_ASSOC);
+
+        if ($deletedKontrol) {
+            $sil = $pdo->prepare("UPDATE rezervasyonlar SET deleted = 1 WHERE id = :id");
+        } else {
+            $sil = $pdo->prepare("DELETE FROM rezervasyonlar WHERE id = :id");
+        }
+        $sil->execute(['id' => (int)$rezervasyon['id']]);
+
+        $koltuk = $pdo->prepare("UPDATE koltuklar SET durum = 'bos' WHERE id = :koltuk_id AND deleted = 0");
+        $koltuk->execute(['koltuk_id' => (int)$rezervasyon['koltuk_id']]);
+
+        $pdo->commit();
+        echo json_encode(['basarili' => true]);
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        echo json_encode(['basarili' => false, 'hata' => 'Rezervasyon iptal edilemedi.']);
+    }
+    exit;
+}
 
 function ozel_secici_render($id, $placeholder, $secenekler) {
     $html = '<div class="ozel-secici-sarmalayici ozel-secici-kompakt">';
@@ -28,6 +118,7 @@ $yil_secenekleri = [];
 for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
     $yil_secenekleri[$y] = (string)$y;
 }
+$geriUrl = 'rezervasyon.php?rezervasyonlardan=1';
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -54,6 +145,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         <main class="content-area" style="justify-content:flex-start">
 
             <div class="content-box" id="sorgu-icerik">
+                <a href="<?= htmlspecialchars($geriUrl) ?>" class="rez-geri-link" onclick="rezervasyonEtkinligeDonusHazirla()">← Geri dön</a>
                 <h2 class="form-header-title">Rezervasyonlarım</h2>
                 <p class="form-header-sub">Geçmiş ve mevcut rezervasyonlarını görmek için TC kimlik numaranı ve doğum tarihini gir.</p>
 
@@ -71,7 +163,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             </div>
 
             <div class="content-box" id="sonuc-icerik" style="display:none; max-width: 1160px;">
-                <a href="rezervasyon.php" class="rez-geri-link">← Yeni Rezervasyon</a>
+                <a href="<?= htmlspecialchars($geriUrl) ?>" class="rez-geri-link" onclick="rezervasyonEtkinligeDonusHazirla()">← Geri dön</a>
                 <div class="rez-baslik-satiri">
                     <div>
                         <h2 class="form-header-title" id="sonuc-baslik"></h2>
@@ -92,6 +184,17 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             </div>
 
         </main>
+    </div>
+
+    <div class="rez-iptal-modal-perde" id="rez-iptal-modal-perde" style="display:none"></div>
+    <div class="rez-iptal-modal" id="rez-iptal-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="rez-iptal-baslik">
+        <div class="rez-iptal-ikon">!</div>
+        <h2 id="rez-iptal-baslik">Rezervasyonu İptal Et</h2>
+        <p>Bu rezervasyonu iptal etmek istediğinize emin misiniz?<br>Bu işlem geri alınamaz.</p>
+        <div class="rez-iptal-modal-butonlar">
+            <button type="button" class="rez-iptal-modal-vazgec" onclick="iptalOnayiKapat()">Vazgeç</button>
+            <button type="button" class="rez-iptal-modal-evet" id="rez-iptal-modal-evet" onclick="rezervasyonuIptalEt()">Evet, İptal Et</button>
+        </div>
     </div>
 
     <script>
@@ -125,11 +228,36 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             });
             var liste = document.getElementById(listeId);
             var acikMiydi = liste.style.display === 'block';
-            liste.style.display = acikMiydi ? 'none' : 'block';
-            if (!acikMiydi) {
-                liste.scrollTop = 0;
+
+            if (acikMiydi) {
+                liste.style.display = 'none';
+                return;
             }
+
+            var buton = document.getElementById(listeId.replace('-liste', '-buton'));
+            if (buton) {
+                if (liste.parentNode !== document.body) {
+                    document.body.appendChild(liste);
+                    liste.classList.add('ozel-secici-liste-tasindi');
+                }
+                var dikdortgen = buton.getBoundingClientRect();
+                liste.style.top = (dikdortgen.bottom + 4) + 'px';
+                liste.style.left = dikdortgen.left + 'px';
+                liste.style.width = dikdortgen.width + 'px';
+            }
+
+            liste.style.display = 'block';
+            liste.scrollTop = 0;
         }
+
+        window.addEventListener('scroll', function (e) {
+            if (e.target && e.target.classList && e.target.classList.contains('ozel-secici-liste')) {
+                return;
+            }
+            document.querySelectorAll('.ozel-secici-liste').forEach(function (el) {
+                el.style.display = 'none';
+            });
+        }, true);
 
         function ozelSeciciSec(madde) {
             var id = madde.dataset.id;
@@ -150,6 +278,43 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         });
 
         var tcTimer = null;
+
+        var oturumTc = <?= json_encode($_SESSION['rezervasyon_kullanici']['tc_no'] ?? '') ?>;
+        var oturumDogum = <?= json_encode($_SESSION['rezervasyon_kullanici']['dogum_tarihi'] ?? '') ?>;
+
+        function rezervasyonEtkinligeDonusHazirla() {
+            document.cookie = 'rezervasyon_geri_izni=1; path=/; SameSite=Lax';
+        }
+
+        function oturumRezervasyonlariniGetir() {
+            if (!oturumTc || !oturumDogum) return;
+
+            var sorguIcerik = document.getElementById('sorgu-icerik');
+            var sonucIcerik = document.getElementById('sonuc-icerik');
+
+            sorguIcerik.style.display = 'none';
+            sonucIcerik.style.display = 'block';
+            document.getElementById('sonuc-baslik').textContent = 'Rezervasyonların yükleniyor...';
+            document.getElementById('sonuc-alt-baslik').textContent = '';
+
+            fetch('vatandas-rezervasyonlari.php?tc_no=' + encodeURIComponent(oturumTc) + '&dogum_tarihi=' + encodeURIComponent(oturumDogum))
+                .then(function (yanit) { return yanit.json(); })
+                .then(function (veri) {
+                    if (veri.durum === 'bulundu') {
+                        sonuclariGoster(veri);
+                    } else {
+                        sorguIcerik.style.display = 'block';
+                        sonucIcerik.style.display = 'none';
+                        gosterToast('Oturum bilgileri doğrulanamadı. Lütfen tekrar giriş yap.');
+                    }
+                })
+                .catch(function (hata) {
+                    sorguIcerik.style.display = 'block';
+                    sonucIcerik.style.display = 'none';
+                    gosterToast('Rezervasyonlar yüklenirken bir hata oluştu.');
+                    console.error(hata);
+                });
+        }
 
         function dogumTarihiGuncelle() {
             var gun = document.getElementById('dogum-gun').value;
@@ -305,6 +470,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                     '</div>' +
                     '<div class="ticket-divider">' +
                     '<div class="notch notch-top"></div>' +
+                    '<div class="notch notch-orta"></div>' +
                     '<div class="dashed-line"></div>' +
                     '<div class="notch notch-bottom"></div>' +
                     '</div>' +
@@ -315,6 +481,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                     '<span class="ref-title">REFERANS KODU</span>' +
                     '<span class="ref-code">' + r.referans_kodu + '</span>' +
                     '<button type="button" class="btn-download" onclick="qrIndir(this, \'' + r.koltuk_no + '\')">İndir ⬇</button>' +
+                    (!r.giris_yapildi_mi && rezervasyonIptalEdilebilirMi(r.tarih) ? '<button type="button" class="btn-iptal" onclick="iptalOnayiAc(this, \'' + r.referans_kodu + '\')">İptal et</button>' : '') +
                     '</div>' +
                     '</div>';
                 kutu.appendChild(kart);
@@ -331,20 +498,91 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             document.getElementById('sonuc-icerik').style.display = 'block';
         }
 
+        function rezervasyonIptalEdilebilirMi(tarihStr) {
+            if (!tarihStr) return true;
+            var parcalar = tarihStr.split('.');
+            if (parcalar.length !== 3) return true;
+
+            var etkinlikGunu = new Date(parcalar[2], parcalar[1] - 1, parcalar[0]);
+            var bugun = new Date();
+            bugun.setHours(0, 0, 0, 0);
+
+            var farkGun = Math.round((etkinlikGunu - bugun) / (1000 * 60 * 60 * 24));
+            return farkGun >= 3;
+        }
+
+        var aktifIptalReferans = '';
+
+        function iptalOnayiAc(buton, referansKodu) {
+            aktifIptalReferans = referansKodu;
+            document.getElementById('rez-iptal-modal-perde').style.display = 'block';
+            document.getElementById('rez-iptal-modal').style.display = 'block';
+        }
+
+        function iptalOnayiKapat() {
+            aktifIptalReferans = '';
+            document.getElementById('rez-iptal-modal-perde').style.display = 'none';
+            document.getElementById('rez-iptal-modal').style.display = 'none';
+            document.getElementById('rez-iptal-modal-evet').disabled = false;
+            document.getElementById('rez-iptal-modal-evet').textContent = 'Evet, İptal Et';
+        }
+
+        function rezervasyonuIptalEt() {
+            if (!aktifIptalReferans) return;
+
+            var buton = document.getElementById('rez-iptal-modal-evet');
+            buton.disabled = true;
+            buton.textContent = 'İptal ediliyor...';
+
+            var veriler = new FormData();
+            veriler.append('islem', 'iptal');
+            veriler.append('referans_kodu', aktifIptalReferans);
+
+            fetch('rezervasyonlarim.php', { method: 'POST', body: veriler })
+                .then(function (yanit) { return yanit.json(); })
+                .then(function (veri) {
+                    if (!veri.basarili) {
+                        gosterToast(veri.hata || 'Rezervasyon iptal edilemedi.');
+                        buton.disabled = false;
+                        buton.textContent = 'Evet, İptal Et';
+                        return;
+                    }
+
+                    iptalOnayiKapat();
+                    gosterToast('Rezervasyonun iptal edildi.');
+                    oturumRezervasyonlariniGetir();
+                })
+                .catch(function (hata) {
+                    console.error(hata);
+                    gosterToast('Rezervasyon iptal edilirken bir hata oluştu.');
+                    buton.disabled = false;
+                    buton.textContent = 'Evet, İptal Et';
+                });
+        }
+
+        document.getElementById('rez-iptal-modal-perde').addEventListener('click', iptalOnayiKapat);
+
         function qrIndir(buton, koltukNo) {
             var kart = buton.closest('.rez-qr-karti, .ticket-container');
             if (!kart) return;
 
-            buton.style.display = 'none';
+            var gizlenecekButonlar = kart.querySelectorAll('.btn-download, .btn-iptal');
+            gizlenecekButonlar.forEach(function (el) { el.style.display = 'none'; });
 
             html2canvas(kart, { backgroundColor: '#ffffff', scale: 2 }).then(function (canvas) {
                 var link = document.createElement('a');
                 link.download = 'koltuk-' + koltukNo + '-bilet.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                buton.style.display = '';
+                gizlenecekButonlar.forEach(function (el) { el.style.display = ''; });
+            }).catch(function () {
+                gizlenecekButonlar.forEach(function (el) { el.style.display = ''; });
+                gosterToast('Bilet indirilemedi.');
             });
         }
+        document.addEventListener('DOMContentLoaded', function () {
+            oturumRezervasyonlariniGetir();
+        });
     </script>
 
 </body>
