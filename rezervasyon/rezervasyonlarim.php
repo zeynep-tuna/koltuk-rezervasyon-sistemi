@@ -6,11 +6,17 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 // Rezervasyonlarım sadece rezervasyon sayfasındaki butondan gelindiğinde
 // mevcut kimlik oturumunu kullanır. Sayfa yenilenirse geçiş izni olmadığı
 // için kullanıcı tekrar giriş ekranını görür.
-$rezervasyonGirisIzni = ($_COOKIE['rezervasyon_giris_izni'] ?? '') === '1';
-if ($rezervasyonGirisIzni) {
-    setcookie('rezervasyon_giris_izni', '', time() - 3600, '/');
-} else {
-    unset($_SESSION['rezervasyon_kullanici']);
+// (Bu kontrol, iptal AJAX isteğinde ÇALIŞMAMALI - o istek sayfa açıldıktan
+// sonra geliyor ve tek kullanımlık çerez o zaman zaten tüketilmiş oluyor.)
+$ajaxIptalIstegi = ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['islem'] ?? '') === 'iptal');
+
+if (!$ajaxIptalIstegi) {
+    $rezervasyonGirisIzni = ($_COOKIE['rezervasyon_giris_izni'] ?? '') === '1';
+    if ($rezervasyonGirisIzni) {
+        setcookie('rezervasyon_giris_izni', '', time() - 3600, '/');
+    } else {
+        unset($_SESSION['rezervasyon_kullanici']);
+    }
 }
 
 require '../includes/db.php';
@@ -20,9 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['islem'] ?? '') === 'iptal'
     header('Content-Type: application/json; charset=utf-8');
 
     $oturum = $_SESSION['rezervasyon_kullanici'] ?? null;
-    $referans = trim($_POST['referans_kodu'] ?? '');
+    $qr_token = trim($_POST['qr_token'] ?? '');
 
-    if (!$oturum || empty($oturum['id']) || $referans === '') {
+    if (!$oturum || empty($oturum['id']) || $qr_token === '') {
         echo json_encode(['basarili' => false, 'hata' => 'Oturum bilgileri bulunamadı.']);
         exit;
     }
@@ -34,12 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['islem'] ?? '') === 'iptal'
             SELECT r.id, r.koltuk_id, r.giris_yapildi_mi, e.etkinlik_tarih
             FROM rezervasyonlar r
             JOIN etkinlikler e ON e.id = r.etkinlik_id
-            WHERE r.referans_kodu = :referans
+            WHERE r.qr_token = :qr_token
               AND r.vatandas_id = :vatandas_id
             LIMIT 1
         ");
         $stmt->execute([
-            'referans' => $referans,
+            'qr_token' => $qr_token,
             'vatandas_id' => (int)$oturum['id']
         ]);
         $rezervasyon = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -297,7 +303,7 @@ $geriUrl = 'rezervasyon.php?rezervasyonlardan=1';
             document.getElementById('sonuc-baslik').textContent = 'Rezervasyonların yükleniyor...';
             document.getElementById('sonuc-alt-baslik').textContent = '';
 
-            fetch('vatandas-rezervasyonlari.php?tc_no=' + encodeURIComponent(oturumTc) + '&dogum_tarihi=' + encodeURIComponent(oturumDogum))
+            fetch('vatandas-rezervasyonlari.php?tc_no=' + encodeURIComponent(oturumTc) + '&dogum_tarihi=' + encodeURIComponent(oturumDogum), { cache: 'no-store' })
                 .then(function (yanit) { return yanit.json(); })
                 .then(function (veri) {
                     if (veri.durum === 'bulundu') {
@@ -355,10 +361,12 @@ $geriUrl = 'rezervasyon.php?rezervasyonlardan=1';
             }
 
             tcTimer = setTimeout(function () {
-                fetch('vatandas-rezervasyonlari.php?tc_no=' + encodeURIComponent(tc) + '&dogum_tarihi=' + encodeURIComponent(dogum))
+                fetch('vatandas-rezervasyonlari.php?tc_no=' + encodeURIComponent(tc) + '&dogum_tarihi=' + encodeURIComponent(dogum), { cache: 'no-store' })
                     .then(function (yanit) { return yanit.json(); })
                     .then(function (veri) {
                         if (veri.durum === 'bulundu') {
+                            oturumTc = tc;
+                            oturumDogum = dogum;
                             sonuclariGoster(veri);
                         } else if (veri.durum === 'gecersiz_tc') {
                             gosterToast('Girdiğin TC kimlik numarası geçersiz. Lütfen kontrol et.');
@@ -481,7 +489,7 @@ $geriUrl = 'rezervasyon.php?rezervasyonlardan=1';
                     '<span class="ref-title">REFERANS KODU</span>' +
                     '<span class="ref-code">' + r.referans_kodu + '</span>' +
                     '<button type="button" class="btn-download" onclick="qrIndir(this, \'' + r.koltuk_no + '\')">İndir ⬇</button>' +
-                    (!r.giris_yapildi_mi && rezervasyonIptalEdilebilirMi(r.tarih) ? '<button type="button" class="btn-iptal" onclick="iptalOnayiAc(this, \'' + r.referans_kodu + '\')">İptal et</button>' : '') +
+                    (!r.giris_yapildi_mi && rezervasyonIptalEdilebilirMi(r.tarih) ? '<button type="button" class="btn-iptal" onclick="iptalOnayiAc(this, \'' + r.qr_token + '\')">İptal et</button>' : '') +
                     '</div>' +
                     '</div>';
                 kutu.appendChild(kart);
@@ -536,7 +544,7 @@ $geriUrl = 'rezervasyon.php?rezervasyonlardan=1';
 
             var veriler = new FormData();
             veriler.append('islem', 'iptal');
-            veriler.append('referans_kodu', aktifIptalReferans);
+            veriler.append('qr_token', aktifIptalReferans);
 
             fetch('rezervasyonlarim.php', { method: 'POST', body: veriler })
                 .then(function (yanit) { return yanit.json(); })

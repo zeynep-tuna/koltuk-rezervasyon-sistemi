@@ -1950,8 +1950,6 @@ body {
     }
 }
 
-
-
 /* Son düzenlemeler: sidebar sabit, butonlar altta ve kaydırmada ekranda kalır */
 .main-workspace {
     align-items: flex-start;
@@ -2148,4 +2146,67 @@ body {
     #sonuc-icerik .rez-qr-listesi {
         grid-template-columns: 1fr;
     }
+}
+
+/* Etkinlik Listesi Sayfalama (Pagination) */
+.sayfalama-kapsayici {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+    user-select: none;
+}
+
+.sayfalama-sayilar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sayfalama-numara,
+.sayfalama-ok {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a4a4a;
+    background-color: #ffffff;
+    border: 1px solid #E5DFD8;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.sayfalama-numara:hover,
+.sayfalama-ok:hover:not(.pasif) {
+    background-color: #E5F3EB;
+    color: #2D5A44;
+    border-color: #A7D4BC;
+}
+
+.sayfalama-numara.aktif {
+    background-color: #2D5A44;
+    color: #ffffff;
+    border-color: #2D5A44;
+    cursor: default;
+    box-shadow: 0 2px 6px rgba(45, 90, 68, 0.35);
+}
+
+.sayfalama-ok {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.sayfalama-ok.pasif {
+    color: #ccc;
+    background-color: #f9f9f9;
+    border-color: #eee;
+    cursor: not-allowed;
+    box-shadow: none;
 }

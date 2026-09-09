@@ -584,3 +584,478 @@
 .btn-sil-onayla:hover {
     background-color: #a02020;
 }
+
+/* Toplu islem cubugu (coklu secim ile silme) */
+.toplu-islem-cubugu {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #FFF3F0;
+    border: 1px solid #F4C7BC;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: #8a3b2e;
+}
+
+.toplu-islem-cubugu .btn-sil {
+    margin: 0;
+}
+
+/* Tablodaki secim kutulari */
+.admin-tablo th input[type="checkbox"],
+.admin-tablo td input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Sayfalama */
+.sayfalama {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 20px;
+    padding: 14px 0;
+}
+
+.sayfalama-ok {
+    color: #3D7A5D;
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 7px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.sayfalama-ok:hover {
+    background-color: #F7F7F5;
+}
+
+.sayfalama-devre-disi {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.sayfalama-bilgi {
+    font-size: 12.5px;
+    color: #777;
+}
+
+/* Tumunu Sec ve toplu islem cubugu - Ekle butonunun yaninda */
+.tumunu-sec-etiket {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+    margin-left: 14px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.tumunu-sec-etiket input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.toplu-islem-cubugu {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 14px;
+    padding: 6px 12px;
+    background-color: #FFF3F0;
+    border: 1px solid #F4C7BC;
+    border-radius: 999px;
+    font-size: 12.5px;
+    color: #8a3b2e;
+    vertical-align: middle;
+}
+
+.toplu-islem-cubugu .btn-sil {
+    margin: 0;
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+/* Tablodaki secim kutulari */
+.admin-tablo td input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Toplu islem satiri - filtrelerin altinda, saga yasli */
+.rez-toplu-satir {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.rez-toplu-satir #secili-sayisi-metni {
+    font-size: 12.5px;
+    color: #8a3b2e;
+}
+
+.rez-toplu-satir #secilenleri-sil-btn {
+    background-color: #FDECEA;
+    border-color: #F4C7BC;
+    color: #a91e1e;
+}
+
+.rez-toplu-satir #secilenleri-sil-btn:hover {
+    background-color: #FBD9D4;
+}
+
+/* Tablodaki satir secim kutulari */
+.admin-tablo td input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* "X rezervasyon secildi" - kirmizi, yuvarlak kenarli rozet */
+#secili-sayisi-metni {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #a91e1e;
+    background-color: #FDECEA;
+    border: 1px solid #F4C7BC;
+    border-radius: 999px;
+    padding: 8px 14px;
+}
+
+#secilenleri-sil-btn {
+    background-color: #FDECEA;
+    border-color: #F4C7BC;
+    color: #a91e1e;
+}
+
+#secilenleri-sil-btn:hover {
+    background-color: #FBD9D4;
+}
+
+/* Tablodaki satir secim kutulari */
+.admin-tablo td input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Toplu islem satiri - filtrelerin hemen altinda, saga yasli */
+.rez-toplu-satir {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+#secili-sayisi-metni {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #a91e1e;
+    background-color: #FDECEA;
+    border: 1px solid #F4C7BC;
+    border-radius: 999px;
+    padding: 8px 14px;
+}
+
+#secilenleri-sil-btn {
+    background-color: #FDECEA;
+    border-color: #F4C7BC;
+    color: #a91e1e;
+}
+
+#secilenleri-sil-btn:hover {
+    background-color: #FBD9D4;
+}
+
+/* Satira tiklayarak secim */
+.rez-secilebilir-satir {
+    cursor: pointer;
+}
+
+.rez-satir-secili {
+    background-color: #FDECEA !important;
+}
+
+.rez-satir-secili:hover {
+    background-color: #FBD9D4 !important;
+}
+
+.rez-ekle-toplu-satiri {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.rez-toplu-satir {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#secili-sayisi-metni {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #a91e1e;
+    background-color: #FDECEA;
+    border: 1px solid #F4C7BC;
+    border-radius: 999px;
+    padding: 8px 14px;
+}
+
+#secilenleri-sil-btn,
+#secilenleri-kaldir-btn {
+    background-color: #FDECEA;
+    border-color: #F4C7BC;
+    color: #a91e1e;
+}
+
+#secilenleri-sil-btn:hover,
+#secilenleri-kaldir-btn:hover {
+    background-color: #FBD9D4;
+}
+
+/* Satira tiklayarak secim */
+.rez-secilebilir-satir {
+    cursor: pointer;
+}
+
+.rez-satir-secili {
+    background-color: #FDECEA !important;
+}
+
+.rez-satir-secili:hover {
+    background-color: #FBD9D4 !important;
+}
+
+.rez-ekle-toplu-satiri {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.rez-toplu-satir {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#secili-sayisi-metni {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #a91e1e;
+    background-color: #FDECEA;
+    border: 1px solid #F4C7BC;
+    border-radius: 999px;
+    padding: 8px 14px;
+}
+
+#secilenleri-sil-btn {
+    background-color: #FDECEA;
+    border-color: #F4C7BC;
+    color: #a91e1e;
+}
+
+#secilenleri-sil-btn:hover {
+    background-color: #FBD9D4;
+}
+
+/* Satira tiklayarak secim */
+.rez-secilebilir-satir {
+    cursor: pointer;
+}
+
+.rez-satir-secili {
+    background-color: #FDECEA !important;
+}
+
+.rez-satir-secili:hover {
+    background-color: #FBD9D4 !important;
+}
+
+.rez-ekle-toplu-satiri {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.rez-toplu-satir {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#secili-sayisi-metni {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #a91e1e;
+    background-color: #FDECEA;
+    border: 1px solid #F4C7BC;
+    border-radius: 999px;
+    padding: 8px 14px;
+}
+
+#secilenleri-sil-btn {
+    background-color: #FDECEA;
+    border-color: #F4C7BC;
+    color: #a91e1e;
+}
+
+#secilenleri-sil-btn:hover {
+    background-color: #FBD9D4;
+}
+
+#secilenleri-kaldir-btn {
+    background-color: #fff !important;
+    border-color: #ddd !important;
+    color: #333 !important;
+}
+
+#secilenleri-kaldir-btn:hover {
+    background-color: #F7F7F5 !important;
+}
+
+/* Satira tiklayarak secim */
+.rez-secilebilir-satir {
+    cursor: pointer;
+}
+
+.rez-satir-secili {
+    background-color: #FDECEA !important;
+}
+
+.rez-satir-secili:hover {
+    background-color: #FBD9D4 !important;
+}
+
+/* Sayfalama */
+.sayfalama {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 20px;
+    padding: 14px 0;
+}
+
+.sayfalama-ok {
+    color: #3D7A5D;
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 7px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.sayfalama-ok:hover {
+    background-color: #F7F7F5;
+}
+
+.sayfalama-devre-disi {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.sayfalama-bilgi {
+    font-size: 12.5px;
+    color: #777;
+}
+
+/* =========================================
+   REZERVASYON SAYFALAMA
+   ========================================= */
+
+.rez-sayfalama {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    margin-bottom: 10px;
+}
+
+.sayfa-numara,
+.sayfa-ok {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+
+    transition: all 0.2s ease;
+}
+
+.sayfa-numara {
+    color: #555;
+    background: #fff;
+    border: 1px solid #e5e1dc;
+}
+
+.sayfa-numara:hover {
+    background: #f5eee8;
+    border-color: #d9b9a5;
+}
+
+.sayfa-numara.aktif {
+    color: #fff;
+    background: #c96f52;
+    border-color: #c96f52;
+    font-weight: 600;
+}
+
+.sayfa-ok {
+    color: #555;
+    background: #fff;
+    border: 1px solid #e5e1dc;
+    font-size: 18px;
+}
+
+.sayfa-ok:hover {
+    background: #f5eee8;
+    border-color: #d9b9a5;
+}
+
+.sayfa-ok.pasif {
+    color: #cfcfcf;
+    background: #f8f8f8;
+    border-color: #eeeeee;
+    cursor: default;
+}
+
+.dolu-etiketi {
+    background-color: #FFF3E0;
+    color: #B15C00;
+    border-color: #F5D9AD;
+}
+
+.dolu-etiketi {
+    background-color: #EFEFEF;
+    color: #757575;
+    border-color: #cfcfcf;
+}

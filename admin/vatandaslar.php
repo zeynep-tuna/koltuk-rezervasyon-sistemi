@@ -557,7 +557,11 @@ function telefon_formatla($tel) {
         }
 
         function telefonMaskele(input) {
-            var d = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+            var d = input.value.replace(/[^0-9]/g, '');
+            if (d.length > 10 && d.charAt(0) === '0') {
+                d = d.slice(1);
+            }
+            d = d.slice(0, 10);
             telefonMaskeleRakamdan(input, d);
         }
 

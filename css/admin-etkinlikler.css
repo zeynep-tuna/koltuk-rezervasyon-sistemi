@@ -1,3 +1,9 @@
+/* Sekmeler arası geçişte dikey scrollbar açılıp kapandığı için
+   sayfanın sağa-sola zıplamasını engeller */
+html {
+    scrollbar-gutter: stable;
+}
+
 .btn-ekle {
     display: inline-block;
     margin-bottom: 20px;
@@ -51,6 +57,11 @@
     color: #fff;
 }
 
+
+/* ============================== */
+/* TABLO                          */
+/* ============================== */
+
 .admin-tablo {
     width: 100%;
     border-collapse: collapse;
@@ -58,13 +69,19 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    /* Sütunların sekmeler arasında aynı kalmasını sağlar */
+    table-layout: fixed;
 }
 
 .admin-tablo th,
 .admin-tablo td {
-    padding: 12px 14px;
+    padding: 12px 10px;
     text-align: left;
     border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .admin-tablo th {
@@ -74,11 +91,96 @@
     color: #4a4a4a;
 }
 
+
+/* ============================== */
+/* SÜTUN ORANLARI                 */
+/* ============================== */
+
+/* Sıra No */
+.admin-tablo th:nth-child(1) {
+    width: 5%;
+}
+
+/* Etkinlik Adı */
+.admin-tablo th:nth-child(2) {
+    width: 17%;
+}
+
+/* Yer */
+.admin-tablo th:nth-child(3) {
+    width: 12%;
+}
+
+/* Tarih */
+.admin-tablo th:nth-child(4) {
+    width: 12%;
+}
+
+/* Saat */
+.admin-tablo th:nth-child(5) {
+    width: 6%;
+}
+
+/* Koltuk Sayısı */
+/* Önceden %8 idi, biraz genişlettik */
+.admin-tablo th:nth-child(6) {
+    width: 10%;
+}
+
+/* Durum */
+/* Önceden %8 idi, biraz genişlettik */
+.admin-tablo th:nth-child(7) {
+    width: 9%;
+}
+
+/* Yayın Tarihi */
+.admin-tablo th:nth-child(8) {
+    width: 15%;
+}
+
+/* İşlemler */
+.admin-tablo th:nth-child(9) {
+    width: 14%;
+    padding-right: 14px;
+}
+
+
+/* ============================== */
+/* ETKİNLİK ADI                   */
+/* ============================== */
+
+.admin-tablo td:nth-child(2) {
+    white-space: normal;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+
+/* ============================== */
+/* YER                            */
+/* ============================== */
+
+.admin-tablo td:nth-child(3) {
+    white-space: normal;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+
+/* ============================== */
+/* BOŞ SATIR                      */
+/* ============================== */
+
 .bos-satir {
     text-align: center;
     color: #888;
     padding: 30px 0;
 }
+
+
+/* ============================== */
+/* TARİH YOK                      */
+/* ============================== */
 
 .tarih-yok {
     color: #999;
@@ -86,18 +188,35 @@
     font-size: 13px;
 }
 
+
+/* ============================== */
+/* İŞLEMLER                       */
+/* ============================== */
+
+.islemler {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
 .islemler a,
 .islemler button {
     text-decoration: none;
     font-size: 13px;
     font-family: inherit;
-    padding: 7px 14px;
+    padding: 7px 12px;
     border-radius: 6px;
     border: none;
     display: inline-block;
-    margin-right: 8px;
     cursor: pointer;
+    white-space: nowrap;
 }
+
+
+/* ============================== */
+/* DÜZENLE                        */
+/* ============================== */
 
 .btn-duzenle {
     background-color: #2e7d32;
@@ -108,6 +227,11 @@
     background-color: #256428;
 }
 
+
+/* ============================== */
+/* SİL                            */
+/* ============================== */
+
 .btn-sil {
     background-color: #c62828;
     color: #fff;
@@ -117,7 +241,11 @@
     background-color: #a02020;
 }
 
-/* Modal (pop-up) */
+
+/* ============================== */
+/* MODAL                          */
+/* ============================== */
+
 .admin-modal {
     border: none;
     border-radius: 12px;
@@ -198,4 +326,13 @@
 
 .btn-sil-onayla:hover {
     background-color: #a02020;
+}
+
+/* Kaydirma cubugu genislik degisikligi tablo hizasini kaydirmasin diye */
+html {
+    scrollbar-gutter: stable;
+}
+
+.admin-tablo th {
+    white-space: nowrap;
 }

@@ -60,19 +60,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toplu_durum'])) {
     $yeni_durum = $_POST['toplu_durum'];
     $secili_idler = $_POST['secili_koltuklar'] ?? [];
     $gecerli_durumlar = ['bos', 'dolu', 'protokol'];
-    $protokol_adi_giris = trim($_POST['protokol_adi'] ?? '');
+    $etiket_giris = trim($_POST['protokol_adi'] ?? '');
+    $etiket_gerekli = in_array($yeni_durum, ['dolu', 'protokol']);
 
     if (in_array($yeni_durum, $gecerli_durumlar) && count($secili_idler) > 0) {
         $temiz_idler = array_values(array_filter($secili_idler, function ($v) {
             return ctype_digit((string)$v);
         }));
 
-        if ($yeni_durum === 'protokol' && $protokol_adi_giris === '') {
-            $toplu_hata = 'Protokol yapmak için hangi kurum/grup için olduğunu girmelisin.';
+        if ($etiket_gerekli && $etiket_giris === '') {
+            $toplu_hata = $yeni_durum === 'protokol'
+                ? 'Protokol yapmak için hangi kurum/grup için olduğunu girmelisin.'
+                : 'Dolu yapmak için bir sebep/etiket girmelisin.';
         } elseif (count($temiz_idler) > 0) {
-            // Onceki durumu 'protokol' olan ama artik protokol'den cikan koltuklarin
-            // rezervasyon kaydini iptal et (koltuk baska bir duruma geciyorsa)
-            if ($yeni_durum !== 'protokol') {
+            // Koltuk 'bos' yapiliyorsa, uzerindeki etiketli (protokol/dolu) rezervasyon kaydini iptal et
+            if ($yeni_durum === 'bos') {
                 $yer_tutucular_r = implode(',', array_fill(0, count($temiz_idler), '?'));
                 $iptal_sorgu = $pdo->prepare("UPDATE rezervasyonlar SET deleted = 1 WHERE koltuk_id IN ($yer_tutucular_r) AND protokol_adi IS NOT NULL AND deleted = 0");
                 $iptal_sorgu->execute(array_values($temiz_idler));
@@ -83,18 +85,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toplu_durum'])) {
             $sorgu = $pdo->prepare("UPDATE koltuklar SET durum = ? WHERE id IN ($yer_tutucular) AND etkinlik_id = ?");
             $sorgu->execute($params);
 
-            // Protokol yapiliyorsa, her koltuk icin bir rezervasyon kaydi olustur
-            if ($yeni_durum === 'protokol') {
-                $rez_ekle = $pdo->prepare("INSERT INTO rezervasyonlar (etkinlik_id, koltuk_id, protokol_adi, qr_token) VALUES (:etkinlik_id, :koltuk_id, :protokol_adi, :qr_token)");
+            // Dolu ya da protokol yapiliyorsa, her koltuk icin bir rezervasyon kaydi olustur
+            if ($etiket_gerekli) {
                 foreach ($temiz_idler as $koltuk_id) {
-                    // Bu koltuk icin zaten aktif bir protokol kaydi var mi kontrol et (tekrar eklememek icin)
+                    // Bu koltuk icin zaten aktif bir etiketli kayit var mi kontrol et (tekrar eklememek icin)
                     $kontrol = $pdo->prepare("SELECT id FROM rezervasyonlar WHERE koltuk_id = :koltuk_id AND deleted = 0 AND protokol_adi IS NOT NULL");
                     $kontrol->execute(['koltuk_id' => $koltuk_id]);
-                    if (!$kontrol->fetch()) {
+                    if ($kontrol->fetch()) {
+                        continue;
+                    }
+
+                    // Bu koltuk icin daha once iptal edilmis (soft-delete) bir kayit varsa,
+                    // unique constraint (koltuk_id) cakismasin diye yeni INSERT yerine o kaydi canlandir.
+                    $eski_kayit = $pdo->prepare("SELECT id FROM rezervasyonlar WHERE koltuk_id = :koltuk_id AND deleted = 1 LIMIT 1");
+                    $eski_kayit->execute(['koltuk_id' => $koltuk_id]);
+                    $eski = $eski_kayit->fetch();
+
+                    if ($eski) {
+                        $rez_ekle = $pdo->prepare("UPDATE rezervasyonlar SET etkinlik_id = :etkinlik_id, vatandas_id = NULL, protokol_adi = :protokol_adi, qr_token = :qr_token, deleted = 0, giris_yapildi_mi = 0, giris_zamani = NULL, olusturma_tarihi = NOW() WHERE id = :id");
+                        $rez_ekle->execute([
+                            'etkinlik_id' => $etkinlik_id,
+                            'protokol_adi' => $etiket_giris,
+                            'qr_token' => bin2hex(random_bytes(16)),
+                            'id' => $eski['id'],
+                        ]);
+                    } else {
+                        $rez_ekle = $pdo->prepare("INSERT INTO rezervasyonlar (etkinlik_id, koltuk_id, protokol_adi, qr_token) VALUES (:etkinlik_id, :koltuk_id, :protokol_adi, :qr_token)");
                         $rez_ekle->execute([
                             'etkinlik_id' => $etkinlik_id,
                             'koltuk_id' => $koltuk_id,
-                            'protokol_adi' => $protokol_adi_giris,
+                            'protokol_adi' => $etiket_giris,
                             'qr_token' => bin2hex(random_bytes(16)),
                         ]);
                     }
@@ -214,8 +234,8 @@ if (!empty($etkinlik['koridor_sonrasi']) || $etkinlik['koridor_sonrasi'] === '0'
                                 <input type="text" id="aralik-bitis" class="aralik-input" placeholder="B9" autocomplete="off">
                                 <span class="arac-sag-yasla"></span>
                                 <button type="submit" name="toplu_durum" value="bos" class="btn-arac btn-arac-bos">Boş Yap</button>
-                                <button type="submit" name="toplu_durum" value="dolu" class="btn-arac btn-arac-dolu">Dolu Yap</button>
-                                <button type="button" class="btn-arac btn-arac-protokol" onclick="protokolAdiSor()">Protokol Yap</button>
+                                <button type="button" class="btn-arac btn-arac-dolu" onclick="etiketSor('dolu')">Dolu Yap</button>
+                                <button type="button" class="btn-arac btn-arac-protokol" onclick="etiketSor('protokol')">Protokol Yap</button>
                             </div>
                         </div>
 
@@ -270,29 +290,46 @@ if (!empty($etkinlik['koridor_sonrasi']) || $etkinlik['koridor_sonrasi'] === '0'
     </div>
 
     <dialog id="protokol-adi-modal" class="modal modal-kucuk">
-        <h2>Protokole Ayır</h2>
-        <p class="modal-aciklama">Seçtiğin koltuklar hangi kurum/grup için ayrılıyor?</p>
-        <input type="text" id="protokol-adi-modal-input" placeholder="Örn: Basın, Belediye Meclisi, Sponsorlar" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();protokolAdiOnayla();}">
+        <h2 id="etiket-modal-baslik">Protokole Ayır</h2>
+        <p class="modal-aciklama" id="etiket-modal-aciklama">Seçtiğin koltuklar hangi kurum/grup için ayrılıyor?</p>
+        <input type="text" id="protokol-adi-modal-input" placeholder="Örn: Basın, Belediye Meclisi, Sponsorlar" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();etiketOnayla();}">
         <p class="hata-mesaj-inline" id="protokol-adi-modal-hata" style="display:none">Bu alan zorunludur.</p>
         <div class="modal-butonlar">
             <button type="button" class="btn-vazgec" onclick="document.getElementById('protokol-adi-modal').close()">Vazgeç</button>
-            <button type="button" class="btn-kaydet" onclick="protokolAdiOnayla()">Protokole Ayır</button>
+            <button type="button" class="btn-kaydet" id="etiket-modal-onay-buton" onclick="etiketOnayla()">Protokole Ayır</button>
         </div>
     </dialog>
 
     <script>
-        function protokolAdiSor() {
+        var aktifEtiketDurumu = 'protokol';
+
+        function etiketSor(durum) {
             var seciliVarMi = document.querySelectorAll('.koltuk-checkbox:checked').length > 0;
             if (!seciliVarMi) {
-                alert('Önce protokole ayırmak istediğin koltukları seç.');
+                alert('Önce ' + (durum === 'dolu' ? 'dolu yapmak' : 'protokole ayırmak') + ' istediğin koltukları seç.');
                 return;
             }
+
+            aktifEtiketDurumu = durum;
+
+            if (durum === 'dolu') {
+                document.getElementById('etiket-modal-baslik').textContent = 'Koltukları Dolu Yap';
+                document.getElementById('etiket-modal-aciklama').textContent = 'Bu koltuklar neden dolu? Kısa bir sebep/etiket gir.';
+                document.getElementById('protokol-adi-modal-input').placeholder = 'Örn: Arızalı Koltuk, Teknik Ekip';
+                document.getElementById('etiket-modal-onay-buton').textContent = 'Dolu Yap';
+            } else {
+                document.getElementById('etiket-modal-baslik').textContent = 'Protokole Ayır';
+                document.getElementById('etiket-modal-aciklama').textContent = 'Seçtiğin koltuklar hangi kurum/grup için ayrılıyor?';
+                document.getElementById('protokol-adi-modal-input').placeholder = 'Örn: Basın, Belediye Meclisi, Sponsorlar';
+                document.getElementById('etiket-modal-onay-buton').textContent = 'Protokole Ayır';
+            }
+
             document.getElementById('protokol-adi-modal-input').value = '';
             document.getElementById('protokol-adi-modal-hata').style.display = 'none';
             document.getElementById('protokol-adi-modal').showModal();
         }
 
-        function protokolAdiOnayla() {
+        function etiketOnayla() {
             var girilenAd = document.getElementById('protokol-adi-modal-input').value.trim();
             if (girilenAd === '') {
                 document.getElementById('protokol-adi-modal-hata').style.display = 'block';
@@ -301,7 +338,7 @@ if (!empty($etkinlik['koridor_sonrasi']) || $etkinlik['koridor_sonrasi'] === '0'
             document.getElementById('protokol-adi-gizli').value = girilenAd;
             var durumAlani = document.getElementById('protokol-durum-gizli');
             durumAlani.removeAttribute('disabled');
-            durumAlani.value = 'protokol';
+            durumAlani.value = aktifEtiketDurumu;
             document.getElementById('toplu-form').requestSubmit();
         }
 
