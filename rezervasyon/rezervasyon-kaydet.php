@@ -66,7 +66,7 @@ foreach ($bulunan_koltuklar as $k) {
         'qr_token' => $yeni_qr_token,
     ]);
 
-    $koltuk_guncelle = $pdo->prepare("UPDATE koltuklar SET durum = 'dolu' WHERE id = :id");
+    $koltuk_guncelle = $pdo->prepare("UPDATE koltuklar SET durum = 'dolu', tutan_oturum = NULL, tutulma_bitis = NULL WHERE id = :id");
     $koltuk_guncelle->execute(['id' => $k['id']]);
 
     $sonuc_listesi[] = [

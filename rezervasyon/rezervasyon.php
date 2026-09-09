@@ -163,10 +163,28 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                 <p class="form-header-sub">Katılmak istediğin etkinliği seç.</p>
 
                 <div class="rez-etkinlik-listesi" id="etkinlik-listesi">
-                    <!-- Kartlar JavaScript ile dinamik ve 6'şarlı yüklenecek -->
+                    <?php if (count($etkinlikler) === 0): ?>
+                        <p class="rez-bos-mesaj">Şu anda rezervasyona açık bir etkinlik yok.</p>
+                    <?php endif; ?>
+                    <?php foreach ($etkinlikler as $e): ?>
+                        <div class="rez-etkinlik-karti <?= $e['kalan_koltuk'] === 0 ? 'rez-etkinlik-karti-dolu' : '' ?>" data-etkinlik-id="<?= $e['id'] ?>" data-etkinlik-ad="<?= htmlspecialchars($e['ad']) ?>" data-etkinlik-yer="<?= htmlspecialchars($e['yer']) ?>" data-etkinlik-tarih="<?= $e['etkinlik_tarih'] ? date('d.m.Y', strtotime($e['etkinlik_tarih'])) : '' ?>" data-etkinlik-saat="<?= $e['etkinlik_saat'] ? substr($e['etkinlik_saat'], 0, 5) : '' ?>" data-kalan-koltuk="<?= $e['kalan_koltuk'] ?>" onclick="etkinlikSec(this)">
+                            <div class="rez-etkinlik-poster">🎭</div>
+                            <div class="rez-etkinlik-bilgi-metin">
+                                <div class="rez-etkinlik-adi"><?= htmlspecialchars($e['ad']) ?></div>
+                                <div class="rez-etkinlik-detay">
+                                    <?= htmlspecialchars($e['yer']) ?>
+                                    <?php if ($e['etkinlik_tarih']): ?>
+                                        · <?= date('d.m.Y', strtotime($e['etkinlik_tarih'])) ?> <?= $e['etkinlik_saat'] ? substr($e['etkinlik_saat'], 0, 5) : '' ?>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="rez-koltuk-rozeti <?= $e['kalan_koltuk'] === 0 ? 'rez-koltuk-rozeti-dolu' : '' ?>">
+                                    <?= $e['kalan_koltuk'] > 0 ? $e['kalan_koltuk'] . ' koltuk kaldı' : 'Koltuk kalmadı' ?>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-sec" <?= $e['kalan_koltuk'] === 0 ? 'disabled' : '' ?>>Seç</button>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-
-                <div id="etkinlik-sayfalama"></div>
             </div>
 
             <!-- ADIM 2: Koltuk Secimi -->
@@ -368,6 +386,15 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                 }
             }
             mevcutAdim = hedefAdim;
+
+            if (hedefAdim === 2) {
+                koltukPollingBaslat();
+            } else {
+                koltukPollingDurdur();
+                if (hedefAdim === 1) {
+                    koltuklariBirak();
+                }
+            }
         }
 
         function stepperTiklandi(hedefAdim) {
@@ -409,7 +436,6 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             }
             kimlikKontrolTetikle();
         });
-
         function dogumTarihiGuncelle() {
             var gun = document.getElementById('dogum-gun').value;
             var ay = document.getElementById('dogum-ay').value;
@@ -568,6 +594,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             }, 4000);
         }
 
+
         document.getElementById('yeni_tc').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
             var hataKutu = document.getElementById('yeni-tc-format-hata');
@@ -667,13 +694,41 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         var seciliKoltuklar = [];
         var MAKS_KOLTUK = 4;
 
+        var oturumTokeni = sessionStorage.getItem('rez-oturum-token');
+        if (!oturumTokeni) {
+            oturumTokeni = 'tok_' + Date.now() + '_' + Math.random().toString(36).substring(2, 12);
+            sessionStorage.setItem('rez-oturum-token', oturumTokeni);
+        }
+
+        function koltuklariBirak() {
+            if (!secilenEtkinlik || seciliKoltuklar.length === 0) return;
+
+            seciliKoltuklar.forEach(function (k) {
+                var veriler = new FormData();
+                veriler.append('koltuk_id', k.id);
+                veriler.append('etkinlik_id', secilenEtkinlik.id);
+                veriler.append('oturum_token', oturumTokeni);
+                veriler.append('islem', 'birak');
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon('koltuk-tut.php', veriler);
+                } else {
+                    fetch('koltuk-tut.php', { method: 'POST', body: veriler }).catch(function () {});
+                }
+            });
+
+            seciliKoltuklar = [];
+        }
+
+        window.addEventListener('beforeunload', koltuklariBirak);
+
+
         function koltukHaritasiniYukle() {
             var harita = document.getElementById('koltuk-harita');
             harita.innerHTML = '<p class="rez-bos-mesaj">Yükleniyor...</p>';
             document.getElementById('adim3-devam-btn').disabled = true;
             seciliKoltuklarOzetiGuncelle();
 
-            fetch('koltuk-liste.php?etkinlik_id=' + secilenEtkinlik.id)
+            fetch('koltuk-liste.php?etkinlik_id=' + secilenEtkinlik.id + '&oturum_token=' + encodeURIComponent(oturumTokeni), { cache: 'no-store' })
                 .then(function (yanit) { return yanit.json(); })
                 .then(function (veri) {
                     if (veri.hata) {
@@ -741,9 +796,13 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                     var numara = k.koltuk_no.substring(harf.length);
                     var durumSinif = 'rez-koltuk-bos';
                     var tiklanamaz = '';
-                    if (k.durum !== 'bos') {
+                    var musaitMi = (k.musait_mi !== undefined) ? k.musait_mi : (k.durum === 'bos');
+                    if (!musaitMi) {
                         durumSinif = 'rez-koltuk-dolu';
                         tiklanamaz = 'disabled';
+                    }
+                    if (k.kendim_mi_tutuyorum) {
+                        durumSinif += ' rez-koltuk-secili';
                     }
                     html += '<button type="button" class="rez-koltuk-kutu ' + durumSinif + '" data-id="' + k.id + '" data-no="' + k.koltuk_no + '" ' + tiklanamaz + ' onclick="koltukSec(this)"><span>' + numara + '</span></button>';
                 });
@@ -801,6 +860,68 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             }
         }
 
+        var koltukPollingId = null;
+        var KOLTUK_POLLING_ARALIGI = 2000;
+
+        function koltukPollingBaslat() {
+            koltukPollingDurdur();
+            koltukPollingId = setInterval(koltukHaritasiniSessizceGuncelle, KOLTUK_POLLING_ARALIGI);
+        }
+
+        function koltukPollingDurdur() {
+            if (koltukPollingId) {
+                clearInterval(koltukPollingId);
+                koltukPollingId = null;
+            }
+        }
+
+        function koltukHaritasiniSessizceGuncelle() {
+            if (!secilenEtkinlik) return;
+
+            fetch('koltuk-liste.php?etkinlik_id=' + secilenEtkinlik.id + '&oturum_token=' + encodeURIComponent(oturumTokeni), { cache: 'no-store' })
+                .then(function (yanit) { return yanit.json(); })
+                .then(function (veri) {
+                    if (veri.hata) return;
+
+                    koltukHaritasiniCiz(veri);
+
+                    // Kullanicinin kendi sectigi (henuz kaydedilmemis) koltuklari yeniden
+                    // isaretle; baskasi tarafindan alinmis olanlari ya da tutma suresi dolup
+                    // sahipsiz kalanlari listeden cikar ve bildir.
+                    var suresiDolanlar = [];
+                    var baskasininAldiklari = [];
+                    seciliKoltuklar = seciliKoltuklar.filter(function (k) {
+                        var tazeKoltuk = veri.koltuklar.find(function (vk) { return String(vk.id) === String(k.id); });
+
+                        if (!tazeKoltuk || !tazeKoltuk.kendim_mi_tutuyorum) {
+                            if (tazeKoltuk && tazeKoltuk.musait_mi) {
+                                suresiDolanlar.push(k.no);
+                            } else {
+                                baskasininAldiklari.push(k.no);
+                            }
+                            return false;
+                        }
+
+                        var buton = document.querySelector('.rez-koltuk-kutu[data-id="' + k.id + '"]');
+                        if (buton) {
+                            buton.classList.add('rez-koltuk-secili');
+                        }
+                        return true;
+                    });
+
+                    if (suresiDolanlar.length > 0) {
+                        gosterToast((suresiDolanlar.length > 1 ? suresiDolanlar.join(', ') + ' koltukları için ayırma süren' : suresiDolanlar[0] + ' koltuğu için ayırma süren') + ' doldu, tekrar seçebilirsin.');
+                        seciliKoltuklarOzetiGuncelle();
+                    }
+                    if (baskasininAldiklari.length > 0) {
+                        gosterToast((baskasininAldiklari.length > 1 ? baskasininAldiklari.join(', ') + ' koltukları' : baskasininAldiklari[0] + ' koltuğu') + ' başka biri tarafından alındı.');
+                        seciliKoltuklarOzetiGuncelle();
+                    }
+
+                })
+                .catch(function () {});
+        }
+
         function koltukSec(buton) {
             var id = buton.dataset.id;
             var no = buton.dataset.no;
@@ -809,15 +930,50 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             if (index !== -1) {
                 seciliKoltuklar.splice(index, 1);
                 buton.classList.remove('rez-koltuk-secili');
-            } else {
-                if (seciliKoltuklar.length >= MAKS_KOLTUK) {
-                    gosterToast('En fazla ' + MAKS_KOLTUK + ' koltuk seçebilirsin.');
-                    return;
-                }
-                seciliKoltuklar.push({ id: id, no: no });
-                buton.classList.add('rez-koltuk-secili');
+                seciliKoltuklarOzetiGuncelle();
+
+                var birakVerileri = new FormData();
+                birakVerileri.append('koltuk_id', id);
+                birakVerileri.append('etkinlik_id', secilenEtkinlik.id);
+                birakVerileri.append('oturum_token', oturumTokeni);
+                birakVerileri.append('islem', 'birak');
+                fetch('koltuk-tut.php', { method: 'POST', body: birakVerileri }).catch(function () {});
+                return;
             }
-            seciliKoltuklarOzetiGuncelle();
+
+            if (seciliKoltuklar.length >= MAKS_KOLTUK) {
+                gosterToast('En fazla ' + MAKS_KOLTUK + ' koltuk seçebilirsin.');
+                return;
+            }
+
+            buton.disabled = true;
+
+            var tutVerileri = new FormData();
+            tutVerileri.append('koltuk_id', id);
+            tutVerileri.append('etkinlik_id', secilenEtkinlik.id);
+            tutVerileri.append('oturum_token', oturumTokeni);
+            tutVerileri.append('islem', 'tut');
+
+            fetch('koltuk-tut.php', { method: 'POST', body: tutVerileri })
+                .then(function (yanit) { return yanit.json(); })
+                .then(function (veri) {
+                    buton.disabled = false;
+
+                    if (!veri.basarili) {
+                        gosterToast(veri.hata || 'Bu koltuk şu anda seçilemiyor.');
+                        buton.classList.add('rez-koltuk-dolu');
+                        buton.disabled = true;
+                        return;
+                    }
+
+                    seciliKoltuklar.push({ id: id, no: no });
+                    buton.classList.add('rez-koltuk-secili');
+                    seciliKoltuklarOzetiGuncelle();
+                })
+                .catch(function () {
+                    buton.disabled = false;
+                    gosterToast('Bir hata oluştu, tekrar dene.');
+                });
         }
 
         function koltukKontrolEdipDevamEt() {
@@ -826,7 +982,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             var devamBtn = document.getElementById('adim3-devam-btn');
             devamBtn.disabled = true;
 
-            fetch('koltuk-liste.php?etkinlik_id=' + secilenEtkinlik.id)
+            fetch('koltuk-liste.php?etkinlik_id=' + secilenEtkinlik.id + '&oturum_token=' + encodeURIComponent(oturumTokeni), { cache: 'no-store' })
                 .then(function (yanit) { return yanit.json(); })
                 .then(function (veri) {
                     devamBtn.disabled = false;
@@ -836,13 +992,13 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
                         return;
                     }
 
-                    var durumlar = {};
+                    var musaitler = {};
                     veri.koltuklar.forEach(function (k) {
-                        durumlar[k.id] = k.durum;
+                        musaitler[k.id] = k.musait_mi;
                     });
 
                     var hepsiBosMu = seciliKoltuklar.every(function (k) {
-                        return durumlar[k.id] === 'bos';
+                        return musaitler[k.id] === true;
                     });
 
                     if (!hepsiBosMu) {
@@ -893,6 +1049,13 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             if (buton) {
                 buton.classList.remove('rez-koltuk-secili');
             }
+
+            var birakVerileri = new FormData();
+            birakVerileri.append('koltuk_id', id);
+            birakVerileri.append('etkinlik_id', secilenEtkinlik.id);
+            birakVerileri.append('oturum_token', oturumTokeni);
+            birakVerileri.append('islem', 'birak');
+            fetch('koltuk-tut.php', { method: 'POST', body: birakVerileri }).catch(function () {});
 
             seciliKoltuklarOzetiGuncelle();
         }
@@ -1043,98 +1206,37 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
             });
         }
 
-        // --- ETKİNLİK SAYFALAMA (HER SAYFADA 6 ADET) ---
-        var tumEtkinlikler = [];
-        var etkinlikMevcutSayfa = 1;
-        var SAYFA_BASI_ETKINLIK = 6;
-
-        function etkinlikSayfalaVeCiz() {
-            var kutu = document.getElementById('etkinlik-listesi');
-            var sayfalamaKutu = document.getElementById('etkinlik-sayfalama');
-            if (!kutu) return;
-
-            if (tumEtkinlikler.length === 0) {
-                kutu.innerHTML = '<p class="rez-bos-mesaj">Şu anda rezervasyona açık bir etkinlik yok.</p>';
-                if (sayfalamaKutu) sayfalamaKutu.innerHTML = '';
-                return;
-            }
-
-            var toplamSayfa = Math.ceil(tumEtkinlikler.length / SAYFA_BASI_ETKINLIK);
-            if (etkinlikMevcutSayfa > toplamSayfa) etkinlikMevcutSayfa = toplamSayfa;
-            if (etkinlikMevcutSayfa < 1) etkinlikMevcutSayfa = 1;
-
-            var baslangic = (etkinlikMevcutSayfa - 1) * SAYFA_BASI_ETKINLIK;
-            var bitis = baslangic + SAYFA_BASI_ETKINLIK;
-            var gosterilecekler = tumEtkinlikler.slice(baslangic, bitis);
-
-            var html = '';
-            gosterilecekler.forEach(function (e) {
-                var doluMu = e.kalan_koltuk === 0;
-                html += '<div class="rez-etkinlik-karti' + (doluMu ? ' rez-etkinlik-karti-dolu' : '') + '" ' +
-                    'data-etkinlik-id="' + e.id + '" data-etkinlik-ad="' + e.ad + '" data-etkinlik-yer="' + e.yer + '" ' +
-                    'data-etkinlik-tarih="' + e.tarih_gosterim + '" data-etkinlik-saat="' + e.saat_gosterim + '" ' +
-                    'data-kalan-koltuk="' + e.kalan_koltuk + '" onclick="etkinlikSec(this)">' +
-                    '<div class="rez-etkinlik-poster">🎭</div>' +
-                    '<div class="rez-etkinlik-bilgi-metin">' +
-                    '<div class="rez-etkinlik-adi">' + e.ad + '</div>' +
-                    '<div class="rez-etkinlik-detay">' + e.yer + (e.tarih_gosterim ? ' · ' + e.tarih_gosterim + ' ' + e.saat_gosterim : '') + '</div>' +
-                    '<div class="rez-koltuk-rozeti' + (doluMu ? ' rez-koltuk-rozeti-dolu' : '') + '">' + (doluMu ? 'Koltuk kalmadı' : e.kalan_koltuk + ' koltuk kaldı') + '</div>' +
-                    '</div>' +
-                    '<button type="button" class="btn-sec" ' + (doluMu ? 'disabled' : '') + '>Seç</button>' +
-                    '</div>';
-            });
-            kutu.innerHTML = html;
-
-            // Yuvarlak Sayfalama Butonları
-            if (!sayfalamaKutu) return;
-            if (toplamSayfa <= 1) {
-                sayfalamaKutu.innerHTML = '';
-                return;
-            }
-
-            var sayfalamaHtml = '<div class="sayfalama-kapsayici">';
-            
-            // Sol Ok
-            if (etkinlikMevcutSayfa > 1) {
-                sayfalamaHtml += '<button type="button" class="sayfalama-ok" onclick="etkinlikSayfaDegistir(' + (etkinlikMevcutSayfa - 1) + ')" title="Önceki">&#8249;</button>';
-            } else {
-                sayfalamaHtml += '<span class="sayfalama-ok pasif">&#8249;</span>';
-            }
-
-            // Sayfa Numaraları
-            sayfalamaHtml += '<div class="sayfalama-sayilar">';
-            for (var i = 1; i <= toplamSayfa; i++) {
-                sayfalamaHtml += '<button type="button" class="sayfalama-numara ' + (i === etkinlikMevcutSayfa ? 'aktif' : '') + '" onclick="etkinlikSayfaDegistir(' + i + ')">' + i + '</button>';
-            }
-            sayfalamaHtml += '</div>';
-
-            // Sağ Ok
-            if (etkinlikMevcutSayfa < toplamSayfa) {
-                sayfalamaHtml += '<button type="button" class="sayfalama-ok" onclick="etkinlikSayfaDegistir(' + (etkinlikMevcutSayfa + 1) + ')" title="Sonraki">&#8250;</button>';
-            } else {
-                sayfalamaHtml += '<span class="sayfalama-ok pasif">&#8250;</span>';
-            }
-
-            sayfalamaHtml += '</div>';
-            sayfalamaKutu.innerHTML = sayfalamaHtml;
-        }
-
-        function etkinlikSayfaDegistir(yeniSayfa) {
-            etkinlikMevcutSayfa = yeniSayfa;
-            etkinlikSayfalaVeCiz();
-        }
-
         function etkinlikListesiniTazele() {
             fetch('etkinlik-liste.php')
                 .then(function (yanit) { return yanit.json(); })
                 .then(function (etkinlikler) {
-                    tumEtkinlikler = etkinlikler;
-                    etkinlikSayfalaVeCiz();
+                    var kutu = document.getElementById('etkinlik-listesi');
+                    if (!kutu) return;
+
+                    if (etkinlikler.length === 0) {
+                        kutu.innerHTML = '<p class="rez-bos-mesaj">Şu anda rezervasyona açık bir etkinlik yok.</p>';
+                        return;
+                    }
+
+                    var html = '';
+                    etkinlikler.forEach(function (e) {
+                        var doluMu = e.kalan_koltuk === 0;
+                        html += '<div class="rez-etkinlik-karti' + (doluMu ? ' rez-etkinlik-karti-dolu' : '') + '" ' +
+                            'data-etkinlik-id="' + e.id + '" data-etkinlik-ad="' + e.ad + '" data-etkinlik-yer="' + e.yer + '" ' +
+                            'data-etkinlik-tarih="' + e.tarih_gosterim + '" data-etkinlik-saat="' + e.saat_gosterim + '" ' +
+                            'data-kalan-koltuk="' + e.kalan_koltuk + '" onclick="etkinlikSec(this)">' +
+                            '<div class="rez-etkinlik-poster">🎭</div>' +
+                            '<div class="rez-etkinlik-bilgi-metin">' +
+                            '<div class="rez-etkinlik-adi">' + e.ad + '</div>' +
+                            '<div class="rez-etkinlik-detay">' + e.yer + (e.tarih_gosterim ? ' · ' + e.tarih_gosterim + ' ' + e.saat_gosterim : '') + '</div>' +
+                            '<div class="rez-koltuk-rozeti' + (doluMu ? ' rez-koltuk-rozeti-dolu' : '') + '">' + (doluMu ? 'Koltuk kalmadı' : e.kalan_koltuk + ' koltuk kaldı') + '</div>' +
+                            '</div>' +
+                            '<button type="button" class="btn-sec" ' + (doluMu ? 'disabled' : '') + '>Seç</button>' +
+                            '</div>';
+                    });
+                    kutu.innerHTML = html;
                 });
         }
-
-        // Sayfa açıldığında etkinlikleri yükle
-        etkinlikListesiniTazele();
 
         setInterval(etkinlikListesiniTazele, 15000);
 
@@ -1142,6 +1244,7 @@ for ($y = (int)date('Y'); $y >= (int)date('Y') - 90; $y--) {
         // seçiminden önce gelindiyse bilgileri bir kez doldur.
         if (rezervasyonlardanGeldi) {
             rezervasyonKullaniciBilgileriniDoldur();
+            // Tek seferlik geçişi URL'den kaldır; yenilemede tekrar otomatik giriş olmasın.
             history.replaceState({ adim: 1 }, '', 'rezervasyon.php#adim-1');
         }
     </script>
