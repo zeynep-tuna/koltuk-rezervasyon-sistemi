@@ -1936,7 +1936,7 @@ body {
     }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 900px) {
     #sonuc-icerik .rez-qr-listesi {
         grid-template-columns: 1fr;
     }
@@ -2209,4 +2209,136 @@ body {
     border-color: #eee;
     cursor: not-allowed;
     box-shadow: none;
+}
+/* =========================================
+   MOBIL / DAR EKRAN DUZENLEMELERI
+   ========================================= */
+@media (max-width: 900px) {
+
+    /* Ust header: baslik + adim gostergesi alt alta, sikismasin */
+    .top-navbar {
+        height: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+
+    .brand {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .brand span {
+        border-left: none;
+        padding-left: 0;
+    }
+
+    .stepper {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .step {
+        font-size: 11px;
+        gap: 4px;
+    }
+
+    .rez-stepper-satiri {
+        padding: 10px 12px;
+        overflow-x: auto;
+    }
+
+    /* Ana govde: yan yana degil, alt alta */
+    .main-workspace {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .sidebar-info,
+    .sidebar-summary {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #E5DFD8;
+        padding: 20px 16px;
+        position: static;
+        height: auto;
+        min-height: auto;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .content-area {
+        padding: 20px 12px;
+    }
+
+    .content-box {
+        padding: 20px 16px;
+        border-radius: 10px;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 100% !important;
+    }
+
+    /* Koltuk haritasi: kutucuklari kuculterek tasmayi azalt,
+       yine de tasarsa yatay kaydirmaya izin ver (kesilip kaybolmasin) */
+    .auditorium-container {
+        padding: 16px 10px;
+    }
+
+    .rez-koltuk-harita {
+        --koltuk-boyutu: 26px;
+        --koltuk-boslugu: 6px;
+        --koltuk-yazi-boyutu: 10px;
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    .rez-koltuk-satiri {
+        gap: 6px;
+    }
+
+    .rez-satir-etiket {
+        width: 16px;
+        font-size: 11px;
+    }
+
+    .rez-koridor-bosluk {
+        width: 12px;
+    }
+}
+
+/* Rezervasyonlarim: bilet kartlarini 900px altinda kesin olarak tek sutuna al
+   (dosyada bu secici icin daha once cakisan, kosulsuz baska kurallar oldugu
+   icin bu kural en sonda, en yuksek oncelikle duruyor) */
+@media (max-width: 900px) {
+    #sonuc-icerik .rez-qr-listesi {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+    }
+
+    .main-workspace {
+        min-height: auto !important;
+    }
+
+    .content-area {
+        flex: none !important;
+        min-height: auto !important;
+    }
+
+    .content-box {
+        min-height: auto !important;
+        height: auto !important;
+    }
+
+    #sonuc-icerik .ticket-container,
+    #sonuc-icerik .ticket-container-cekmece {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
 }

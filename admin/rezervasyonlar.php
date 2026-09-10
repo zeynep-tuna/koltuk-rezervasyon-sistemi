@@ -754,6 +754,8 @@ document.getElementById('ekle-rez-modal').showModal();
 </dialog>
 
 <script>
+        var GIRIS_KONTROL_TABAN = <?= json_encode('http://' . $_SERVER['HTTP_HOST'] . dirname(dirname($_SERVER['PHP_SELF'])) . '/rezervasyon/giris-kontrol.php') ?>;
+
 function filtreAcKapa(id) {
     document.querySelectorAll('.filtre-paneli').forEach(function (el) {
         if (el.id !== id) el.style.display = 'none';
@@ -1008,7 +1010,7 @@ function qrGoster(qrToken, kimIcin) {
     var qrAlani = document.getElementById('qr-kod-alani');
     qrAlani.innerHTML = '';
     new QRCode(qrAlani, {
-        text: qrToken,
+        text: GIRIS_KONTROL_TABAN + '?token=' + encodeURIComponent(qrToken),
         width: 180,
         height: 180,
         colorDark: '#1F1F1F',

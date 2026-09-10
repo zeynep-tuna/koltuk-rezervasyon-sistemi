@@ -132,7 +132,7 @@ $geriUrl = 'rezervasyon.php?rezervasyonlardan=1';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rezervasyonlarım</title>
-    <link rel="stylesheet" href="../css/rezervasyon.css">
+    <link rel="stylesheet" href="../css/rezervasyon.css?v=<?= filemtime('../css/rezervasyon.css') ?>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -204,6 +204,8 @@ $geriUrl = 'rezervasyon.php?rezervasyonlardan=1';
     </div>
 
     <script>
+        var GIRIS_KONTROL_TABAN = <?= json_encode('http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/giris-kontrol.php') ?>;
+
         function tcAlgoritmaGecerliMi(tc) {
             if (!/^[0-9]{11}$/.test(tc)) return false;
             if (tc[0] === '0') return false;
@@ -495,7 +497,7 @@ $geriUrl = 'rezervasyon.php?rezervasyonlardan=1';
                 kutu.appendChild(kart);
 
                 new QRCode(document.getElementById('rez-qr-' + index), {
-                    text: r.qr_token,
+                    text: GIRIS_KONTROL_TABAN + '?token=' + encodeURIComponent(r.qr_token),
                     width: 100,
                     height: 100,
                     colorDark: '#1F1F1F',
